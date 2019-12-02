@@ -48,7 +48,7 @@ namespace OrleansClient
                 .Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "dev";
-                    options.ServiceId = "OrleansBasics";
+                    options.ServiceId = "OperaPmsAdapter";
                 })
                 .ConfigureLogging(logging => logging.AddConsole())
                 .Build();
@@ -85,14 +85,15 @@ namespace OrleansClient
             var tasks = new List<Task<OrderItem>>();
             var hotelOrder = new List<List<OrderItem>> { new List<OrderItem>(), new List<OrderItem>(), new List<OrderItem>() };
 
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 20; i++)
             {
+                System.Threading.Thread.Sleep(10);
                 var hotelId = random.Next(3);
                 var currentNumber = currentNumbers[hotelId] + 1;
                 currentNumbers[hotelId] = currentNumber;
 
-                var friend = client.GetGrain<IOutboundAdapterGrain>(hotelId);
-                var response = friend.UpdateRoomStatus(hotelId, currentNumber);
+                var hotelGrain = client.GetGrain<IOutboundAdapterGrain>(hotelId);
+                var response = hotelGrain.UpdateRoomStatus(currentNumber);
                 tasks.Add(response);
             }
 
@@ -110,13 +111,18 @@ namespace OrleansClient
 
                 hotelOrder[result.HotelId].Add(result);
 
-                Console.WriteLine($"Hotel: {result.HotelId} | Order: {result.Number}", result);
+                Console.WriteLine($"Hotel: {result.HotelId} | Order: {result.Number} | TotalNumber: {result.TotalNumber}", result);
             }
 
-            Console.WriteLine("================================================");
+            Console.WriteLine("---------------------------------------------------------");
 
             foreach (var hotel in hotelOrder)
             {
+                if (!hotel.Any())
+                {
+                    continue;
+                }
+
                 var hotelId = hotel.FirstOrDefault();
 
                 var expectedList = hotel.OrderBy(@event => @event.Number);

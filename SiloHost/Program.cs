@@ -6,6 +6,9 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using OutboundAdapter.Grains;
+using OutboundAdapter.Interfaces;
+using OutboundAdapter.Interfaces.PmsClients;
+using SiloHost.Clients;
 
 namespace SiloHost
 {
@@ -43,10 +46,18 @@ namespace SiloHost
                 .Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "dev";
-                    options.ServiceId = "OrleansBasics";
+                    options.ServiceId = "OperaPmsAdapter";
                 })
-                .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(OutboundAdapterGrain).Assembly).WithReferences())
-                .UseDashboard(options => { })
+                .ConfigureApplicationParts(parts => {
+                    parts.AddApplicationPart(typeof(OutboundAdapterGrain).Assembly).WithReferences();
+                    //parts.AddApplicationPart(typeof(HotelPmsGrain).Assembly).WithReferences();
+                    //parts.AddApplicationPart(typeof(OutboundMappingOperaGrains).Assembly).WithReferences();
+                })
+                //.UseDashboard(options => { options.HideTrace = true; })
+                .AddMemoryGrainStorage(name: "hotelConfigurationStore")
+                .ConfigureServices(services => { services.AddHttpClient(); })
+                .ConfigureServices(services => { services.AddSingleton<IOperaHTNG2008BServiceClient, OperaHTNG2008BServiceClient>(); })
+                .ConfigureServices(services => { services.AddSingleton<IOperaHTNG_EXT2008BWebServicesClient, OperaHTNG_EXT2008BWebServicesClient>(); })
                 .ConfigureLogging(logging => logging.AddConsole());
 
             var host = builder.Build();

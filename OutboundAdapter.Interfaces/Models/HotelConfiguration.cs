@@ -2,12 +2,13 @@
 
 namespace OutboundAdapter.Interfaces.Models
 {
-    public class OrderItem
+    [Serializable]
+    public class HotelConfiguration
     {
         public int HotelId { get; set; }
+        public string Url { get; set; }
+        public int PmsType { get; set; }
         public int Number { get; set; }
-        public Guid PrimaryKey { get; set; }
-        public string Response { get; set; }
         public int TotalNumber { get; set; }
     }
 }

@@ -9,6 +9,6 @@ namespace OutboundAdapter.Interfaces
         Task<OrderItem> FetchProfile(int hotelId, int number);
         Task<OrderItem> FetchReservation(int hotelId, int number);
         Task<OrderItem> ReservationLookup(int hotelId, int number);
-        Task<OrderItem> UpdateRoomStatus(int hotelId, int number);
+        Task<OrderItem> UpdateRoomStatus(int number);
     }
 }
