@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
+using Orleans.Hosting;
 using Orleans.Runtime;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
@@ -50,14 +51,21 @@ namespace OrleansClient
                     options.ClusterId = "dev";
                     options.ServiceId = "OperaPmsAdapter";
                 })
+                .AddSimpleMessageStreamProvider("SMSProvider",
+                            options =>
+                            {
+                                options.OptimizeForImmutableData = false;
+                                options.FireAndForgetDelivery = false;
+                                options.PubSubType = Orleans.Streams.StreamPubSubType.ImplicitOnly;
+                            })
                 .ConfigureLogging(logging => logging.AddConsole())
                 .Build();
 
             //await client.Connect(RetryFilter);
             await client.Connect();
-            
+
             Console.WriteLine("Client successfully connected to silo host \n");
-            
+
             return client;
         }
 
@@ -85,12 +93,23 @@ namespace OrleansClient
             var tasks = new List<Task<OrderItem>>();
             var hotelOrder = new List<List<OrderItem>> { new List<OrderItem>(), new List<OrderItem>(), new List<OrderItem>() };
 
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 4; i++)
             {
-                System.Threading.Thread.Sleep(10);
+                //System.Threading.Thread.Sleep(10);
                 var hotelId = random.Next(3);
                 var currentNumber = currentNumbers[hotelId] + 1;
                 currentNumbers[hotelId] = currentNumber;
+
+                var hotel = client.GetGrain<IHotelPmsGrain>(hotelId);
+                if (!await hotel.IsConnected())
+                {
+                    await hotel.SaveOutboundConfigurationAsync(new HotelConfiguration
+                    {
+                        HotelId = hotelId,
+                        PmsType = 1,
+                        Url = "https://ove-osb.microsdc.us:9015"
+                    });
+                }
 
                 var hotelGrain = client.GetGrain<IOutboundAdapterGrain>(hotelId);
                 var response = hotelGrain.UpdateRoomStatus(currentNumber);

@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NodaTime;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using OutboundAdapter.Grains;
-using OutboundAdapter.Interfaces;
+using OutboundAdapter.Grains.Opera;
 using OutboundAdapter.Interfaces.PmsClients;
-using SiloHost.Clients;
+using Polly;
 
 namespace SiloHost
 {
@@ -40,6 +42,7 @@ namespace SiloHost
 
         private static async Task<ISiloHost> StartSilo()
         {
+
             // define the cluster configuration
             var builder = new SiloHostBuilder()
                 .UseLocalhostClustering()
@@ -48,16 +51,35 @@ namespace SiloHost
                     options.ClusterId = "dev";
                     options.ServiceId = "OperaPmsAdapter";
                 })
-                .ConfigureApplicationParts(parts => {
+                .AddSimpleMessageStreamProvider("SMSProvider",
+                            options =>
+                            {
+                                options.OptimizeForImmutableData = false;
+                                options.FireAndForgetDelivery = false;
+                                options.PubSubType = Orleans.Streams.StreamPubSubType.ImplicitOnly;
+                            })
+                .AddMemoryGrainStorage(name: "PubSubStore")
+                .ConfigureApplicationParts(parts =>
+                {
                     parts.AddApplicationPart(typeof(OutboundAdapterGrain).Assembly).WithReferences();
-                    //parts.AddApplicationPart(typeof(HotelPmsGrain).Assembly).WithReferences();
-                    //parts.AddApplicationPart(typeof(OutboundMappingOperaGrains).Assembly).WithReferences();
                 })
                 //.UseDashboard(options => { options.HideTrace = true; })
                 .AddMemoryGrainStorage(name: "hotelConfigurationStore")
-                .ConfigureServices(services => { services.AddHttpClient(); })
-                .ConfigureServices(services => { services.AddSingleton<IOperaHTNG2008BServiceClient, OperaHTNG2008BServiceClient>(); })
-                .ConfigureServices(services => { services.AddSingleton<IOperaHTNG_EXT2008BWebServicesClient, OperaHTNG_EXT2008BWebServicesClient>(); })
+                .ConfigureServices(services => {
+
+                    //https://www.stevejgordon.co.uk/introduction-to-httpclientfactory-aspnetcore
+                    var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10));
+                    services.AddHttpClient("Opera", client =>
+                    {
+                        //client.DefaultRequestHeaders.Add("Content-Type", "text/xml");
+                        //client.DefaultRequestHeaders.Add("SOAPAction", "http://webservices.micros.com/htng/2008B/SingleGuestItinerary#UpdateRoomStatus");
+                    })
+                    .AddPolicyHandler(timeoutPolicy)
+                    .AddTransientHttpErrorPolicy(p => p.RetryAsync(3));
+
+                    services.AddSingleton<IClock>(SystemClock.Instance);
+                    services.AddTransient<IOperaEnvelopeSerializer, OperaEnvelopeSerializer>();
+                })
                 .ConfigureLogging(logging => logging.AddConsole());
 
             var host = builder.Build();

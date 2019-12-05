@@ -1,5 +1,4 @@
 ﻿using OutboundAdapter.Interfaces.Models;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace OutboundAdapter.Interfaces

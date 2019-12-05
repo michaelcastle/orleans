@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Orleans;
+using Orleans.Streams;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
-using OutboundAdapter.Interfaces.PmsClients;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OutboundAdapter.Grains
@@ -12,23 +13,20 @@ namespace OutboundAdapter.Grains
     {
         private readonly ILogger logger;
         private IHotelPmsGrain _hotel;
-        private IOutboundMappingGrains _hotelOutboundMapper;
-        private IHttpFactoryGrain _httpFactoryGrain;
-        private readonly IOperaHTNG2008BServiceClient _htng2008bClient;
-        private readonly IOperaHTNG_EXT2008BWebServicesClient _htng2008BExtClient;
+        private IStreamProvider _streamProvider;
+        private StreamSequenceToken _streamSequenceToken;
+        private static SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
 
-        public OutboundAdapterGrain(ILogger<OutboundAdapterGrain> logger, IOperaHTNG2008BServiceClient htng2008bClient, IOperaHTNG_EXT2008BWebServicesClient htng2008BExtClient)
+        public OutboundAdapterGrain(ILogger<OutboundAdapterGrain> logger)
         {
             this.logger = logger;
-            //_httpFactoryGrain = new HttpFactoryOperaGrain(htng2008bClient, htng2008BExtClient);
-            _htng2008bClient = htng2008bClient;
-            _htng2008BExtClient = htng2008BExtClient;
         }
 
         public override async Task OnActivateAsync()
         {
-            _hotel = GrainFactory.GetGrain<IHotelPmsGrain>(this.GetPrimaryKeyLong());
-            _hotelOutboundMapper = GrainFactory.GetGrain<IOutboundMappingGrains>(this.GetPrimaryKeyLong());
+            _streamProvider = GetStreamProvider("SMSProvider");
+
+            _hotel = GrainFactory.GetGrain<IHotelPmsGrain>((int)this.GetPrimaryKeyLong());
             //_httpFactoryGrain = GrainFactory.GetGrain<IHttpFactoryGrain>(this.GetPrimaryKeyLong());
 
             await base.OnActivateAsync();
@@ -50,31 +48,50 @@ namespace OutboundAdapter.Grains
         }
 
         // Remove async in order to make sure those are processed in order and sychronous while the others are async
-        Task<OrderItem> IOutboundAdapterGrain.UpdateRoomStatus(int number)
+        async Task<OrderItem> IOutboundAdapterGrain.UpdateRoomStatus(int number)
         {
-            var sourceUpdateRoomStatus = new UpdateRoomStatusRequest
+            await _semaphoreSlim.WaitAsync();
+            try
             {
-                HotelId = (int)this.GetPrimaryKeyLong(),
-                RoomNumber = number.ToString()
-            };
+                var sourceUpdateRoomStatus = new UpdateRoomStatusRequest
+                {
+                    HotelId = (int)this.GetPrimaryKeyLong(),
+                    RoomNumber = number.ToString()
+                };
 
-            AsyncHelper.RunSync(() => _hotel.IncrementAsync());
-            var request = AsyncHelper.RunSync(() => _hotelOutboundMapper.MapUpdateRoomStatus(sourceUpdateRoomStatus));
-            var response = AsyncHelper.RunSync(() => _htng2008BExtClient.OperaHTNG_EXT2008BWebServices(request));
-            var configuration = AsyncHelper.RunSync(() => _hotel.Get());
+                if (!await _hotel.IsConnected())
+                {
+                    return await Task.FromException<OrderItem>(new Exception("Not connected"));
+                }
 
-            var orderItem = new OrderItem
+                var stream = _streamProvider.GetStream<UpdateRoomStatusRequest>(this.GetPrimaryKey(), "UpdateRoomStatusOpera");
+                var streamed = stream.OnNextAsync(sourceUpdateRoomStatus);
+                await streamed;
+                if (streamed.IsFaulted)
+                {
+                    throw new Exception("Stream failed");
+                }
+
+                var configuration = await _hotel.GetOutboundConfiguration();
+                var orderItem = new OrderItem
+                {
+                    PrimaryKey = this.GetPrimaryKey(),
+                    HotelId = (int)this.GetPrimaryKeyLong(),
+                    Number = number,
+                    //Response = request,
+                    TotalNumber = configuration.TotalNumber
+                };
+
+                logger.LogDebug($"\n Message received: I am {orderItem.PrimaryKey}, number = '{orderItem.Number}, Response = '{orderItem.Response}'");
+
+                return orderItem;
+            }
+            finally
             {
-                PrimaryKey = this.GetPrimaryKey(),
-                HotelId = (int)this.GetPrimaryKeyLong(),
-                Number = number,
-                Response = response,
-                TotalNumber = configuration.TotalNumber
-            };
-
-            logger.LogDebug($"\n Message received: I am {orderItem.PrimaryKey}, number = '{orderItem.Number}, Response = '{orderItem.Response}'");
-
-            return Task.FromResult(orderItem);
+                //When the task is ready, release the semaphore. It is vital to ALWAYS release the semaphore when we are ready, or else we will end up with a Semaphore that is forever locked.
+                //This is why it is important to do the Release within a try...finally clause; program execution may crash or take a different path, this way you are guaranteed execution
+                _semaphoreSlim.Release();
+            }
         }
 
         async Task<OrderItem> IOutboundAdapterGrain.RemoteRequest(int hotelId, int number)
