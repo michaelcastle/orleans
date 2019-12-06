@@ -95,7 +95,6 @@ namespace OrleansClient
 
             for (int i = 0; i < 4; i++)
             {
-                //System.Threading.Thread.Sleep(10);
                 var hotelId = random.Next(3);
                 var currentNumber = currentNumbers[hotelId] + 1;
                 currentNumbers[hotelId] = currentNumber;
@@ -112,7 +111,13 @@ namespace OrleansClient
                 }
 
                 var hotelGrain = client.GetGrain<IOutboundAdapterGrain>(hotelId);
-                var response = hotelGrain.UpdateRoomStatus(currentNumber);
+                var response = hotelGrain.UpdateRoomStatus(currentNumber, @"
+<UpdateRoomStatusRequest xmlns=""http://webservices.micros.com/htng/2008B/SingleGuestItinerary/Housekeeping/Types"">
+    <ResortId>USOWS</ResortId>
+    <RoomNumber>0105</RoomNumber>
+    <RoomStatus>Dirty</RoomStatus>
+</UpdateRoomStatusRequest>
+");
                 tasks.Add(response);
             }
 

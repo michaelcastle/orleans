@@ -15,8 +15,8 @@ namespace OutboundAdapter.Grains.Opera
     [ImplicitStreamSubscription("UpdateRoomStatusOpera")]
     public class OperaConsumer : Grain, IGrainWithIntegerKey, IOperaConsumer
     {
-        private readonly List<IAsyncStream<UpdateRoomStatusRequest>> _streams = new List<IAsyncStream<UpdateRoomStatusRequest>>();
-        private readonly List<StreamSubscriptionHandle<UpdateRoomStatusRequest>> _handles = new List<StreamSubscriptionHandle<UpdateRoomStatusRequest>>();
+        private readonly List<IAsyncStream<string>> _streams = new List<IAsyncStream<string>>();
+        private readonly List<StreamSubscriptionHandle<string>> _handles = new List<StreamSubscriptionHandle<string>>();
         private readonly IHttpClientFactory _httpClientFactory;
         private IHotelPmsGrain _hotel;
         private const string Endpoint = "/OPERA9OSB/opera/OperaHTNG_EXT2008BWebServices";
@@ -32,7 +32,7 @@ namespace OutboundAdapter.Grains.Opera
 
             _hotel = GrainFactory.GetGrain<IHotelPmsGrain>((int)this.GetPrimaryKeyLong());
 
-            var stream = streamProvider.GetStream<UpdateRoomStatusRequest>(this.GetPrimaryKey(), "UpdateRoomStatusOpera");
+            var stream = streamProvider.GetStream<string>(this.GetPrimaryKey(), "UpdateRoomStatusOpera");
             _streams.Add(stream);
             _handles.Add(await stream.SubscribeAsync(OnNextAsync, OnErrorAsync, OnCompletedAsync));
 
@@ -50,10 +50,10 @@ namespace OutboundAdapter.Grains.Opera
             return Task.CompletedTask;
         }
 
-        public async Task OnNextAsync(UpdateRoomStatusRequest item, StreamSequenceToken token = null)
+        public async Task OnNextAsync(string request, StreamSequenceToken token = null)
         {
-            var mapper = GrainFactory.GetGrain<IOutboundMappingGrains>(item.HotelId);
-            var contentHandler = mapper.MapUpdateRoomStatus(item);
+            var mapper = GrainFactory.GetGrain<IOutboundMappingGrains>((int)this.GetPrimaryKeyLong());
+            var contentHandler = mapper.MapUpdateRoomStatus(request);
 
             var client = _httpClientFactory.CreateClient("Opera");
             var config = await _hotel.GetOutboundConfiguration();

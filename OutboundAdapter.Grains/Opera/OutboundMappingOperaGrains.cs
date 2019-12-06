@@ -36,17 +36,18 @@ namespace OutboundAdapter.Grains.Opera
             throw new NotImplementedException();
         }
 
-        async Task<string> IOutboundMappingGrains.MapUpdateRoomStatus(UpdateRoomStatusRequest request)
+        async Task<string> IOutboundMappingGrains.MapUpdateRoomStatus(string request)
         {
             return await Task.Run(() => {
                 // Convert from the source XML to the Destination request
-                var requestBody = _operaRequestSerializer.Deserialize<UpdateRoomStatusRequestDto>(@"
-<UpdateRoomStatusRequest xmlns=""http://webservices.micros.com/htng/2008B/SingleGuestItinerary/Housekeeping/Types"">
-    <ResortId>USOWS</ResortId>
-    <RoomNumber>0105</RoomNumber>
-    <RoomStatus>Dirty</RoomStatus>
-</UpdateRoomStatusRequest>
-");
+                var requestBody = _operaRequestSerializer.Deserialize<UpdateRoomStatusRequestDto>(request);
+//                    @"
+//<UpdateRoomStatusRequest xmlns=""http://webservices.micros.com/htng/2008B/SingleGuestItinerary/Housekeeping/Types"">
+//    <ResortId>USOWS</ResortId>
+//    <RoomNumber>0105</RoomNumber>
+//    <RoomStatus>Dirty</RoomStatus>
+//</UpdateRoomStatusRequest>
+//");
                 var envelope = new UpdateRoomStatusRequestEnvelopeDto
                 {
                     Header = _operaRequestSerializer.GetHeaderRequest("http://webservices.micros.com/htng/2008B/SingleGuestItinerary#UpdateRoomStatus"),

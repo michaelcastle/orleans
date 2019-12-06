@@ -42,7 +42,6 @@ namespace SiloHost
 
         private static async Task<ISiloHost> StartSilo()
         {
-
             // define the cluster configuration
             var builder = new SiloHostBuilder()
                 .UseLocalhostClustering()

@@ -8,6 +8,6 @@ namespace OutboundAdapter.Interfaces
         Task<string> MapFetchProfile(FetchProfile request);
         Task<string> MapFetchReservation(FetchReservation request);
         Task<string> MapReservationLookup(ReservationLookup request);
-        Task<string> MapUpdateRoomStatus(UpdateRoomStatusRequest request);
+        Task<string> MapUpdateRoomStatus(string request);
     }
 }

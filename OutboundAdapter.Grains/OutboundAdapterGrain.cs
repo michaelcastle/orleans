@@ -48,7 +48,7 @@ namespace OutboundAdapter.Grains
         }
 
         // Remove async in order to make sure those are processed in order and sychronous while the others are async
-        async Task<OrderItem> IOutboundAdapterGrain.UpdateRoomStatus(int number)
+        async Task<OrderItem> IOutboundAdapterGrain.UpdateRoomStatus(int number, string content)
         {
             await _semaphoreSlim.WaitAsync();
             try
