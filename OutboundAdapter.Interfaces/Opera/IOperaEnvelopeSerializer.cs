@@ -1,7 +1,7 @@
-﻿using OutboundAdapter.Interfaces.Models.Opera;
+﻿using OutboundAdapter.Interfaces.Opera.Models;
 using System.Xml;
 
-namespace OutboundAdapter.Interfaces.PmsClients
+namespace OutboundAdapter.Interfaces.Opera
 {
     public interface IOperaEnvelopeSerializer
     {

@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
+using OutboundAdapter.Interfaces.Opera;
+using OutboundAdapter.Interfaces.Opera.Models;
 
-namespace OutboundPmsAdapterApi.Controllers
+namespace OutboundPmsAdapterApi.Controllers.Opera
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/opera")]
     [ApiController]
     public class OutboundController : ControllerBase
     {
@@ -22,9 +20,10 @@ namespace OutboundPmsAdapterApi.Controllers
             _clusterClient = clusterClient;
         }
 
-        [HttpPost("{hotelId}/Connect")]
+        [HttpPost("Connect/{hotelId}")]
         public async Task<IActionResult> Connect(int hotelId, [FromBody]HotelConfiguration configuration)
         {
+            configuration.PmsType = Constants.PmsType;
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
             var task = hotel.SaveOutboundConfigurationAsync(configuration);
             await task;
@@ -35,8 +34,8 @@ namespace OutboundPmsAdapterApi.Controllers
             return Ok();
         }
 
-        [HttpPost("{hotelId}/UpdateRoomStatus")]
-        public async Task<IActionResult> UpdateRoomStatus(int hotelId, [FromBody]string content)
+        [HttpPost("UpdateRoomStatus/{hotelId}")]
+        public async Task<IActionResult> UpdateRoomStatus(int hotelId, [FromBody]UpdateRoomStatusRequestDto content)
         {
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
             if (!await hotel.IsConnected())
@@ -44,8 +43,15 @@ namespace OutboundPmsAdapterApi.Controllers
                 return BadRequest("Hotel is not connected to the PMS. Please Connect first.");
             }
 
+            var mapper = _clusterClient.GetGrain<IOutboundMappingGrains>(hotelId);
+            var request = mapper.MapUpdateRoomStatus(content);
+
             var hotelGrain = _clusterClient.GetGrain<IOutboundAdapterGrain>(hotelId);
-            var response = await hotelGrain.UpdateRoomStatus(counter++, content); 
+            var response = await hotelGrain.UpdateRoomStatus(counter++, new UpdateRoomStatus
+            {
+                Request = await request
+            });
+
             return Ok(response);
         }
     }

@@ -1,19 +1,17 @@
 ﻿using Orleans;
 using Orleans.Concurrency;
-using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
 using System;
-using OutboundAdapter.Interfaces.Models.Opera;
+using OutboundAdapter.Interfaces.Opera.Models;
 using System.Threading.Tasks;
 using System.Xml;
-using OutboundAdapter.Interfaces.PmsClients;
+using OutboundAdapter.Interfaces.Opera;
 
 namespace OutboundAdapter.Grains.Opera
 {
     [StatelessWorker]
     public class OutboundMappingOperaGrains : Grain, IOutboundMappingGrains
     {
-        private int _hotelId;
         private readonly IOperaEnvelopeSerializer _operaRequestSerializer;
 
         public OutboundMappingOperaGrains(IOperaEnvelopeSerializer operaRequestSerializer)
@@ -36,24 +34,15 @@ namespace OutboundAdapter.Grains.Opera
             throw new NotImplementedException();
         }
 
-        async Task<string> IOutboundMappingGrains.MapUpdateRoomStatus(string request)
+        async Task<string> IOutboundMappingGrains.MapUpdateRoomStatus(UpdateRoomStatusRequestDto request)
         {
             return await Task.Run(() => {
-                // Convert from the source XML to the Destination request
-                var requestBody = _operaRequestSerializer.Deserialize<UpdateRoomStatusRequestDto>(request);
-//                    @"
-//<UpdateRoomStatusRequest xmlns=""http://webservices.micros.com/htng/2008B/SingleGuestItinerary/Housekeeping/Types"">
-//    <ResortId>USOWS</ResortId>
-//    <RoomNumber>0105</RoomNumber>
-//    <RoomStatus>Dirty</RoomStatus>
-//</UpdateRoomStatusRequest>
-//");
                 var envelope = new UpdateRoomStatusRequestEnvelopeDto
                 {
                     Header = _operaRequestSerializer.GetHeaderRequest("http://webservices.micros.com/htng/2008B/SingleGuestItinerary#UpdateRoomStatus"),
                     Body = new UpdateRoomStatusRequestBodyDto
                     {
-                        Request = requestBody
+                        Request = request
                     }
                 };
 

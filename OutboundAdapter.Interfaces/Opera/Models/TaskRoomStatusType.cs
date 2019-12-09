@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace OutboundAdapter.Interfaces.Models.Opera
+namespace OutboundAdapter.Interfaces.Opera.Models
 {
     public enum TaskRoomStatusType
     {

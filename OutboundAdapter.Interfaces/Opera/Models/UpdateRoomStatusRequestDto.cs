@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace OutboundAdapter.Interfaces.Models.Opera
+namespace OutboundAdapter.Interfaces.Opera.Models
 {
     [XmlRoot("UpdateRoomStatusRequest", Namespace = "http://webservices.micros.com/htng/2008B/SingleGuestItinerary/Housekeeping/Types")]
     public class UpdateRoomStatusRequestDto
@@ -18,19 +18,14 @@ namespace OutboundAdapter.Interfaces.Models.Opera
         {
             get
             {
-                switch (_roomStatus)
+                return _roomStatus switch
                 {
-                    case ("CL"):
-                        return "Clean";
-                    case ("DI"):
-                        return "Dirty";
-                    case ("IP"):
-                        return "Inspected";
-                    case ("PU"):
-                        return "Pickup";
-                    default:
-                        return _roomStatus;
-                }
+                    ("CL") => "Clean",
+                    ("DI") => "Dirty",
+                    ("IP") => "Inspected",
+                    ("PU") => "Pickup",
+                    _ => _roomStatus,
+                };
             }
             set { _roomStatus = value; }
         }

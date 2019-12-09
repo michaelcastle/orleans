@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace OutboundAdapter.Interfaces.Models.Opera
+namespace OutboundAdapter.Interfaces.Opera.Models
 {
     [XmlRoot("FetchRoomStatusRequest", Namespace = "http://webservices.micros.com/htng/2008B/SingleGuestItinerary/Housekeeping/Types")]
     public class FetchRoomStatusRequestDto

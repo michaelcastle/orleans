@@ -14,8 +14,8 @@ namespace OutboundAdapter.Grains
         private readonly ILogger logger;
         private IHotelPmsGrain _hotel;
         private IStreamProvider _streamProvider;
-        private StreamSequenceToken _streamSequenceToken;
-        private static SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
+        //private StreamSequenceToken _streamSequenceToken;
+        private static readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
 
         public OutboundAdapterGrain(ILogger<OutboundAdapterGrain> logger)
         {
@@ -48,24 +48,20 @@ namespace OutboundAdapter.Grains
         }
 
         // Remove async in order to make sure those are processed in order and sychronous while the others are async
-        async Task<OrderItem> IOutboundAdapterGrain.UpdateRoomStatus(int number, string content)
+        async Task<OrderItem> IOutboundAdapterGrain.UpdateRoomStatus(int number, UpdateRoomStatus content)
         {
             await _semaphoreSlim.WaitAsync();
             try
             {
-                var sourceUpdateRoomStatus = new UpdateRoomStatusRequest
-                {
-                    HotelId = (int)this.GetPrimaryKeyLong(),
-                    RoomNumber = number.ToString()
-                };
-
                 if (!await _hotel.IsConnected())
                 {
                     return await Task.FromException<OrderItem>(new Exception("Not connected"));
                 }
 
-                var stream = _streamProvider.GetStream<UpdateRoomStatusRequest>(this.GetPrimaryKey(), "UpdateRoomStatusOpera");
-                var streamed = stream.OnNextAsync(sourceUpdateRoomStatus);
+                var streamNamespace = await _hotel.StreamNamespace<UpdateRoomStatus>();
+
+                var stream = _streamProvider.GetStream<UpdateRoomStatus>(this.GetPrimaryKey(), streamNamespace);
+                var streamed = stream.OnNextAsync(content);
                 await streamed;
                 if (streamed.IsFaulted)
                 {
@@ -104,7 +100,7 @@ namespace OutboundAdapter.Grains
             var random = new Random();
             var randomTimeToProcess = random.Next(101, 1000);
 
-            System.Threading.Thread.Sleep(randomTimeToProcess);
+            Thread.Sleep(randomTimeToProcess);
             //await Task.Delay(randomTimeToProcess);
 
             var orderItem = new OrderItem

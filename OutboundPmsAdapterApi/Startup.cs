@@ -10,7 +10,7 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using Polly;
-using Swashbuckle.AspNetCore.Swagger;
+using ServiceExtensions.Formatters.BodyRequestFormatters;
 
 namespace OutboundPmsAdapterApi
 {
@@ -39,6 +39,11 @@ namespace OutboundPmsAdapterApi
                     .Execute(() => ConnectClient());
             });
             services.AddControllers();
+
+            services.AddMvc(o => o.InputFormatters.Insert(0, new RawRequestBodyFormatter()))
+                   .AddXmlSerializerFormatters()
+                   .AddXmlDataContractSerializerFormatters();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Put title here", Description = "DotNet Core Api 3 - with swagger" });

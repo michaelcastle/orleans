@@ -1,22 +1,18 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NodaTime;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using OutboundAdapter.Grains;
-using OutboundAdapter.Grains.Opera;
-using OutboundAdapter.Interfaces.PmsClients;
-using Polly;
+using SiloHost.Opera;
 
 namespace SiloHost
 {
     public class Program
     {
-        public static int Main(string[] args)
+        public static int Main(string[] _)
         {
             return RunMainAsync().Result;
         }
@@ -57,27 +53,28 @@ namespace SiloHost
                                 options.FireAndForgetDelivery = false;
                                 options.PubSubType = Orleans.Streams.StreamPubSubType.ImplicitOnly;
                             })
-                .AddMemoryGrainStorage(name: "PubSubStore")
                 .ConfigureApplicationParts(parts =>
                 {
                     parts.AddApplicationPart(typeof(OutboundAdapterGrain).Assembly).WithReferences();
                 })
                 //.UseDashboard(options => { options.HideTrace = true; })
+                .AddMemoryGrainStorage(name: "PubSubStore")
                 .AddMemoryGrainStorage(name: "hotelConfigurationStore")
                 .ConfigureServices(services => {
+                    services.AddOpera();
 
-                    //https://www.stevejgordon.co.uk/introduction-to-httpclientfactory-aspnetcore
-                    var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10));
-                    services.AddHttpClient("Opera", client =>
-                    {
-                        //client.DefaultRequestHeaders.Add("Content-Type", "text/xml");
-                        //client.DefaultRequestHeaders.Add("SOAPAction", "http://webservices.micros.com/htng/2008B/SingleGuestItinerary#UpdateRoomStatus");
-                    })
-                    .AddPolicyHandler(timeoutPolicy)
-                    .AddTransientHttpErrorPolicy(p => p.RetryAsync(3));
+                    ////https://www.stevejgordon.co.uk/introduction-to-httpclientfactory-aspnetcore
+                    //var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10));
+                    //services.AddHttpClient("Opera", client =>
+                    //{
+                    //    //client.DefaultRequestHeaders.Add("Content-Type", "text/xml");
+                    //    //client.DefaultRequestHeaders.Add("SOAPAction", "http://webservices.micros.com/htng/2008B/SingleGuestItinerary#UpdateRoomStatus");
+                    //})
+                    //.AddPolicyHandler(timeoutPolicy)
+                    //.AddTransientHttpErrorPolicy(p => p.RetryAsync(3));
 
-                    services.AddSingleton<IClock>(SystemClock.Instance);
-                    services.AddTransient<IOperaEnvelopeSerializer, OperaEnvelopeSerializer>();
+                    //services.AddSingleton<IClock>(SystemClock.Instance);
+                    //services.AddTransient<IOperaEnvelopeSerializer, OperaEnvelopeSerializer>();
                 })
                 .ConfigureLogging(logging => logging.AddConsole());
 

@@ -5,6 +5,7 @@ namespace OutboundAdapter.Interfaces
 {
     public interface IHotelPmsGrain : Orleans.IGrainWithIntegerKey
     {
+        Task<string> StreamNamespace<T>();
         Task<bool> IsConnected();
         Task<HotelConfiguration> GetOutboundConfiguration();
         Task IncrementAsync();

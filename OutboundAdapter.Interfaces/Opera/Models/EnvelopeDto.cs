@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml.Serialization;
 
-namespace OutboundAdapter.Interfaces.Models.Opera
+namespace OutboundAdapter.Interfaces.Opera.Models
 {
     //[XmlRoot("Envelope", Namespace = "http://schemas.xmlsoap.org/soap/envelope/")]
     //public class EnvelopeDto<T>

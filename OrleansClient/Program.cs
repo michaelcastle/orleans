@@ -2,9 +2,9 @@
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
-using Orleans.Runtime;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
+using OutboundAdapter.Interfaces.Opera;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ namespace OrleansClient
 {
     public class Program
     {
-        static int Main(string[] args)
+        static int Main(string[] _)
         {
             return RunMainAsync().Result;
         }
@@ -105,19 +105,21 @@ namespace OrleansClient
                     await hotel.SaveOutboundConfigurationAsync(new HotelConfiguration
                     {
                         HotelId = hotelId,
-                        PmsType = 1,
+                        PmsType = Constants.PmsType,
                         Url = "https://ove-osb.microsdc.us:9015"
                     });
                 }
 
                 var hotelGrain = client.GetGrain<IOutboundAdapterGrain>(hotelId);
-                var response = hotelGrain.UpdateRoomStatus(currentNumber, @"
+                var response = hotelGrain.UpdateRoomStatus(currentNumber, new UpdateRoomStatus {
+                    Request = @"
 <UpdateRoomStatusRequest xmlns=""http://webservices.micros.com/htng/2008B/SingleGuestItinerary/Housekeeping/Types"">
     <ResortId>USOWS</ResortId>
     <RoomNumber>0105</RoomNumber>
     <RoomStatus>Dirty</RoomStatus>
 </UpdateRoomStatusRequest>
-");
+"
+                });
                 tasks.Add(response);
             }
 

@@ -2,8 +2,7 @@
 using Orleans.Streams;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
-using OutboundAdapter.Interfaces.PmsClients;
-using OutboundAdapter.Interfaces.Streaming;
+using OutboundAdapter.Interfaces.Opera;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -12,16 +11,16 @@ using System.Threading.Tasks;
 
 namespace OutboundAdapter.Grains.Opera
 {
-    [ImplicitStreamSubscription("UpdateRoomStatusOpera")]
-    public class OperaConsumer : Grain, IGrainWithIntegerKey, IOperaConsumer
+    [ImplicitStreamSubscription(Constants.UpdateRoomStatusStream)]
+    public class UpdateRoomStatusConsumer : Grain, IGrainWithIntegerKey, IUpdateRoomStatusConsumer
     {
-        private readonly List<IAsyncStream<string>> _streams = new List<IAsyncStream<string>>();
-        private readonly List<StreamSubscriptionHandle<string>> _handles = new List<StreamSubscriptionHandle<string>>();
+        private readonly List<IAsyncStream<UpdateRoomStatus>> _streams = new List<IAsyncStream<UpdateRoomStatus>>();
+        private readonly List<StreamSubscriptionHandle<UpdateRoomStatus>> _handles = new List<StreamSubscriptionHandle<UpdateRoomStatus>>();
         private readonly IHttpClientFactory _httpClientFactory;
         private IHotelPmsGrain _hotel;
         private const string Endpoint = "/OPERA9OSB/opera/OperaHTNG_EXT2008BWebServices";
 
-        public OperaConsumer(IHttpClientFactory httpClientFactory)
+        public UpdateRoomStatusConsumer(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }
@@ -32,7 +31,7 @@ namespace OutboundAdapter.Grains.Opera
 
             _hotel = GrainFactory.GetGrain<IHotelPmsGrain>((int)this.GetPrimaryKeyLong());
 
-            var stream = streamProvider.GetStream<string>(this.GetPrimaryKey(), "UpdateRoomStatusOpera");
+            var stream = streamProvider.GetStream<UpdateRoomStatus>(this.GetPrimaryKey(), Constants.UpdateRoomStatusStream);
             _streams.Add(stream);
             _handles.Add(await stream.SubscribeAsync(OnNextAsync, OnErrorAsync, OnCompletedAsync));
 
@@ -50,18 +49,14 @@ namespace OutboundAdapter.Grains.Opera
             return Task.CompletedTask;
         }
 
-        public async Task OnNextAsync(string request, StreamSequenceToken token = null)
+        public async Task OnNextAsync(UpdateRoomStatus request, StreamSequenceToken token = null)
         {
-            var mapper = GrainFactory.GetGrain<IOutboundMappingGrains>((int)this.GetPrimaryKeyLong());
-            var contentHandler = mapper.MapUpdateRoomStatus(request);
-
-            var client = _httpClientFactory.CreateClient("Opera");
+            var client = _httpClientFactory.CreateClient(Constants.PmsType);
             var config = await _hotel.GetOutboundConfiguration();
             client.BaseAddress = new Uri(config.Url);
             client.DefaultRequestHeaders.Add("SOAPAction", "http://webservices.micros.com/htng/2008B/SingleGuestItinerary#UpdateRoomStatus");
 
-            var content = await contentHandler;
-            var response = await client.PostAsync(Endpoint, new StringContent(content, Encoding.UTF8, "text/xml")); // StringContent sets the Content-Type header
+            var response = await client.PostAsync(Endpoint, new StringContent(request.Request, Encoding.UTF8, "text/xml")); // StringContent sets the Content-Type header
             Console.WriteLine(await response.Content.ReadAsStringAsync());
         }
 

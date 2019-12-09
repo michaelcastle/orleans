@@ -1,6 +1,6 @@
 ﻿using NodaTime;
-using OutboundAdapter.Interfaces.Models.Opera;
-using OutboundAdapter.Interfaces.PmsClients;
+using OutboundAdapter.Interfaces.Opera.Models;
+using OutboundAdapter.Interfaces.Opera;
 using System;
 using System.IO;
 using System.Text;

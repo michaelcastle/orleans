@@ -12,7 +12,7 @@ namespace OutboundAdapter.Grains
 
         Task<bool> IHotelPmsGrain.IsConnected()
         {
-            return Task.FromResult(_hotelConfiguration.State != null && _hotelConfiguration.State.PmsType != 0);
+            return Task.FromResult(_hotelConfiguration.State != null && !string.IsNullOrEmpty(_hotelConfiguration.State.PmsType));
         }
 
         public HotelPmsGrain([PersistentState("hotelConfiguration", "hotelConfigurationStore")] IPersistentState<HotelConfiguration> hotelConfiguration)
@@ -40,6 +40,11 @@ namespace OutboundAdapter.Grains
         {
             _hotelConfiguration.State = configuration;
             await _hotelConfiguration.WriteStateAsync();
+        }
+
+        public Task<string> StreamNamespace<T>()
+        {
+            return Task.FromResult($"{nameof(T)}{_hotelConfiguration.State.PmsType}");
         }
     }
 }
