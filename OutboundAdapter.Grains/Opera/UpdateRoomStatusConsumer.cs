@@ -19,6 +19,7 @@ namespace OutboundAdapter.Grains.Opera
         private readonly IHttpClientFactory _httpClientFactory;
         private IHotelPmsGrain _hotel;
         private const string Endpoint = "/OPERA9OSB/opera/OperaHTNG_EXT2008BWebServices";
+        private IStreamProvider _streamProvider;
 
         public UpdateRoomStatusConsumer(IHttpClientFactory httpClientFactory)
         {
@@ -27,11 +28,11 @@ namespace OutboundAdapter.Grains.Opera
 
         public override async Task OnActivateAsync()
         {
-            var streamProvider = GetStreamProvider("SMSProvider");
+            _streamProvider = GetStreamProvider("SMSProvider");
 
             _hotel = GrainFactory.GetGrain<IHotelPmsGrain>((int)this.GetPrimaryKeyLong());
 
-            var stream = streamProvider.GetStream<UpdateRoomStatus>(this.GetPrimaryKey(), Constants.UpdateRoomStatusStream);
+            var stream = _streamProvider.GetStream<UpdateRoomStatus>(this.GetPrimaryKey(), Constants.UpdateRoomStatusStream);
             _streams.Add(stream);
             _handles.Add(await stream.SubscribeAsync(OnNextAsync, OnErrorAsync, OnCompletedAsync));
 
@@ -51,24 +52,49 @@ namespace OutboundAdapter.Grains.Opera
 
         public async Task OnNextAsync(UpdateRoomStatus request, StreamSequenceToken token = null)
         {
+            var response = await PostAsync(request);
+            var resultStream = await SubmitResponse(response);
+
+            Console.WriteLine(resultStream);
+        }
+
+        private async Task<HttpResponseMessage> PostAsync(UpdateRoomStatus request)
+        {
             var client = _httpClientFactory.CreateClient(Constants.PmsType);
             var config = await _hotel.GetOutboundConfiguration();
             client.BaseAddress = new Uri(config.Url);
             client.DefaultRequestHeaders.Add("SOAPAction", "http://webservices.micros.com/htng/2008B/SingleGuestItinerary#UpdateRoomStatus");
 
             var response = await client.PostAsync(Endpoint, new StringContent(request.Request, Encoding.UTF8, "text/xml")); // StringContent sets the Content-Type header
-            Console.WriteLine(await response.Content.ReadAsStringAsync());
+            response.EnsureSuccessStatusCode();
+            return response;
         }
 
-        public static Task<string> ProcessRequest(string content)
+        private async Task<string> SubmitResponse(HttpResponseMessage response)
         {
-            var random = new Random();
-            var randomTimeToProcess = random.Next(1, 1000);
+            var resultStream = response.Content.ReadAsStringAsync();
+            var streamNamespace = await _hotel.StreamNamespace<RoomStatusUpdate>();
+            var stream = _streamProvider.GetStream<string>(this.GetPrimaryKey(), streamNamespace);
 
-            System.Threading.Thread.Sleep(randomTimeToProcess);
-            //Task.Delay(randomTimeToProcess);
+            var streamed = stream.OnNextAsync(await resultStream);
+            await streamed;
+            if (streamed.IsFaulted)
+            {
+                throw new Exception("Stream failed");
+            }
 
-            return Task.FromResult(content);
+            return resultStream.Result;
         }
+
+        //public static Task<string> ProcessRequest(string content)
+        //{
+        //    var random = new Random();
+        //    var randomTimeToProcess = random.Next(1, 1000);
+
+        //    System.Threading.Thread.Sleep(randomTimeToProcess);
+        //    //Task.Delay(randomTimeToProcess);
+
+        //    return Task.FromResult(content);
+        //}
     }
 }

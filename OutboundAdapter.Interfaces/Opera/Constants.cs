@@ -9,5 +9,10 @@ namespace OutboundAdapter.Interfaces.Opera
         public const string FetchProfileStream = nameof(FetchProfile) + PmsType;
         public const string FetchReservationStream = nameof(FetchReservation) + PmsType;
         public const string ReservationLookupStream = nameof(ReservationLookup) + PmsType;
+
+        public static class Inbound
+        {
+            public const string RoomStatusUpdateStream = nameof(RoomStatusUpdate) + PmsType;
+        }
     }
 }

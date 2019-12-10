@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using OutboundPmsAdapterApi;
 
-namespace InboundPmsAdapterApi
+namespace PmsAdapter.Api
 {
     public class Program
     {

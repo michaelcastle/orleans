@@ -6,7 +6,7 @@ using OutboundAdapter.Interfaces.Models;
 using OutboundAdapter.Interfaces.Opera;
 using OutboundAdapter.Interfaces.Opera.Models;
 
-namespace OutboundPmsAdapterApi.Controllers.Opera
+namespace PmsAdapter.Api.Controllers.Opera
 {
     [Route("api/[controller]/opera")]
     [ApiController]
@@ -18,20 +18,6 @@ namespace OutboundPmsAdapterApi.Controllers.Opera
         public OutboundController(IClusterClient clusterClient)
         {
             _clusterClient = clusterClient;
-        }
-
-        [HttpPost("Connect/{hotelId}")]
-        public async Task<IActionResult> Connect(int hotelId, [FromBody]HotelConfiguration configuration)
-        {
-            configuration.PmsType = Constants.PmsType;
-            var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
-            var task = hotel.SaveOutboundConfigurationAsync(configuration);
-            await task;
-            if (!task.IsCompletedSuccessfully)
-            {
-                return StatusCode(500);
-            }
-            return Ok();
         }
 
         [HttpPost("UpdateRoomStatus/{hotelId}")]

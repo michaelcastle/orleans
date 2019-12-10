@@ -59,7 +59,6 @@ namespace OutboundAdapter.Grains
                 }
 
                 var streamNamespace = await _hotel.StreamNamespace<UpdateRoomStatus>();
-
                 var stream = _streamProvider.GetStream<UpdateRoomStatus>(this.GetPrimaryKey(), streamNamespace);
                 var streamed = stream.OnNextAsync(content);
                 await streamed;

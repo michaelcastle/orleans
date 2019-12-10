@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceExtensions.PmsAdapter\ServiceExtensions.PmsAdapter.csproj" />
+    <ProjectReference Include="..\ServiceExtensions.Soap.Core\ServiceExtensions.Soap.Core.csproj" />
+  </ItemGroup>
+
+</Project>

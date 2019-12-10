@@ -10,5 +10,13 @@ namespace OutboundAdapter.Interfaces.Models
         public string PmsType { get; set; }
         public int Number { get; set; }
         public int TotalNumber { get; set; }
+        public Credentials Credentials { get; set;}
+    }
+
+    [Serializable]
+    public class Credentials
+    {
+        public string EncryptedUsername { get; set; }
+        public string EncryptedPassword { get; set; }
     }
 }
