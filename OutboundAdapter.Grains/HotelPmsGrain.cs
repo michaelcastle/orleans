@@ -3,6 +3,7 @@ using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
 using System.Threading.Tasks;
 using Orleans.Runtime;
+using static OutboundAdapter.Interfaces.Opera.Constants;
 
 namespace OutboundAdapter.Grains
 {
@@ -10,9 +11,14 @@ namespace OutboundAdapter.Grains
     {
         private readonly IPersistentState<HotelConfiguration> _hotelConfiguration;
 
-        Task<bool> IHotelPmsGrain.IsConnected()
+        Task<bool> IHotelPmsGrain.IsOutboundConnected()
         {
-            return Task.FromResult(_hotelConfiguration.State != null && !string.IsNullOrEmpty(_hotelConfiguration.State.PmsType));
+            return Task.FromResult(_hotelConfiguration.State.OutboundConfiguration != null && !string.IsNullOrEmpty(_hotelConfiguration.State.OutboundConfiguration.PmsType));
+        }
+
+        Task<bool> IHotelPmsGrain.IsInboundConnected()
+        {
+            return Task.FromResult(_hotelConfiguration.State.InboundConfiguration != null && !string.IsNullOrEmpty(_hotelConfiguration.State.InboundConfiguration.InboundType));
         }
 
         public HotelPmsGrain([PersistentState("hotelConfiguration", "hotelConfigurationStore")] IPersistentState<HotelConfiguration> hotelConfiguration)
@@ -25,9 +31,14 @@ namespace OutboundAdapter.Grains
             await base.OnActivateAsync();
         }
 
-        Task<HotelConfiguration> IHotelPmsGrain.GetOutboundConfiguration()
+        Task<InboundConfiguration> IHotelPmsGrain.GetInboundConfiguration()
         {
-            return Task.FromResult(_hotelConfiguration.State);
+            return Task.FromResult(_hotelConfiguration.State.InboundConfiguration);
+        }
+
+        Task<OutboundConfiguration> IHotelPmsGrain.GetOutboundConfiguration()
+        {
+            return Task.FromResult(_hotelConfiguration.State.OutboundConfiguration);
         }
 
         async Task IHotelPmsGrain.IncrementAsync()
@@ -36,15 +47,27 @@ namespace OutboundAdapter.Grains
             await _hotelConfiguration.WriteStateAsync();
         }
 
-        async Task IHotelPmsGrain.SaveOutboundConfigurationAsync(HotelConfiguration configuration)
+        async Task IHotelPmsGrain.SaveOutboundConfigurationAsync(OutboundConfiguration configuration)
         {
-            _hotelConfiguration.State = configuration;
+            _hotelConfiguration.State.OutboundConfiguration = configuration;
             await _hotelConfiguration.WriteStateAsync();
         }
 
-        public Task<string> StreamNamespace<T>()
+        // TODO: Change this to streaming and subscribing multiple receivers to input
+        async Task IHotelPmsGrain.SubscribeTo(InboundConfiguration configuration)
         {
-            return Task.FromResult($"{nameof(T)}{_hotelConfiguration.State.PmsType}");
+            _hotelConfiguration.State.InboundConfiguration = configuration;
+            await _hotelConfiguration.WriteStateAsync();
+        }
+
+        public Task<string> StreamNamespaceOutbound<T>()
+        {
+            return Task.FromResult($"{nameof(Outbound)}{typeof(T).Name}{_hotelConfiguration.State.OutboundConfiguration.PmsType}");
+        }
+
+        public Task<string> StreamNamespaceInbound<T>()
+        {
+            return Task.FromResult($"{nameof(Inbound)}{typeof(T).Name}{_hotelConfiguration.State.InboundConfiguration.InboundType}");
         }
     }
 }

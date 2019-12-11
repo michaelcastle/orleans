@@ -7,16 +7,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Orleans.Client" Version="3.0.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
-    <PackageReference Include="Polly" Version="7.2.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc4" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="5.0.0-rc4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OutboundAdapter.Grains\OutboundAdapter.Grains.csproj" />
     <ProjectReference Include="..\OutboundAdapter.Interfaces\OutboundAdapter.Interfaces.csproj" />
-    <ProjectReference Include="..\ServiceExtensions.Formatters\ServiceExtensions.Formatters.csproj" />
+    <ProjectReference Include="..\ServiceExtensions.Orleans\ServiceExtensions.Orleans.csproj" />
   </ItemGroup>
 
 </Project>

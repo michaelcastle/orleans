@@ -29,7 +29,7 @@ namespace ServiceExtensions.PmsAdapter.ServiceBus
         {
             bus.AddBus(provider => Bus.Factory.CreateUsingInMemory(configure =>
             {
-                configure.UseExtensionsLogging(provider.GetService<ILoggerFactory>());
+                configure.SetLoggerFactory(provider.GetService<ILoggerFactory>());
                 configure.ReceiveEndpoint(inMemoryQueueName, endpoint =>
                 {
                     //endpoint.UseScheduledRedelivery(r => r.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(7), TimeSpan.FromMinutes(15)));

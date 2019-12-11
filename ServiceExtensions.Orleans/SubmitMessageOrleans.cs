@@ -7,9 +7,9 @@ using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
 using ServiceExtensions.PmsAdapter.SubmitMessage;
 
-namespace OutboundAdapter.Grains.Opera
+namespace ServiceExtensions.Orleans
 {
-    public class SubmitMessageOrleans : ISubmitMessageHandler
+    public class SubmitMessageOrleans : ISubmitMessageHandlerOracleCloud
     {
         private readonly ILogger<SubmitMessageOrleans> _logger;
         private readonly IClusterClient _clusterClient;
@@ -22,11 +22,6 @@ namespace OutboundAdapter.Grains.Opera
             _streamProvider = streamProvider;
         }
 
-        public Task<SubmitMessageResponse> Submit(SubmitMessage submitMessage)
-        {
-            return Task.FromResult(SubmitRoomStatusUpdateBE(submitMessage).Result);
-        }
-
         public async Task<SubmitMessageResponse> SubmitRoomStatusUpdateBE(SubmitMessage submit)
         {
             _logger.LogDebug("SubmitMessageDirect: {submitMessage}", submit.Message);
@@ -35,7 +30,7 @@ namespace OutboundAdapter.Grains.Opera
             {
                 int.TryParse(submit.HotelId, out int hotelIdInt);
                 var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelIdInt);
-                if (!await hotel.IsConnected())
+                if (!await hotel.IsInboundConnected())
                 {
                     return new SubmitMessageResponse
                     {
@@ -44,7 +39,7 @@ namespace OutboundAdapter.Grains.Opera
                     };
                 }
 
-                var streamNamespace = await hotel.StreamNamespace<RoomStatusUpdate>();
+                var streamNamespace = await hotel.StreamNamespaceInbound<RoomStatusUpdate>();
                 var stream = _streamProvider.GetStream<string>(hotel.GetPrimaryKey(), streamNamespace);
 
                 var streamed = stream.OnNextAsync(submit.Message);
@@ -73,6 +68,26 @@ namespace OutboundAdapter.Grains.Opera
                     FailReason = ex
                 };
             }
+        }
+
+        public Task<SubmitMessageResponse> SubmitGuestStatusNotificationExt(SubmitMessage submit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SubmitMessageResponse> SubmitQueueRoomBE(SubmitMessage submit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SubmitMessageResponse> SubmitNewProfile(SubmitMessage submit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SubmitMessageResponse> SubmitUpdateProfile(SubmitMessage submit)
+        {
+            throw new NotImplementedException();
         }
     }
 }

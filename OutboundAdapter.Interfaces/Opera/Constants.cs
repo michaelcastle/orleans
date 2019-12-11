@@ -4,15 +4,23 @@ namespace OutboundAdapter.Interfaces.Opera
 {
     public static class Constants
     {
-        public const string PmsType = "Opera";
-        public const string UpdateRoomStatusStream = nameof(UpdateRoomStatus) + PmsType;
-        public const string FetchProfileStream = nameof(FetchProfile) + PmsType;
-        public const string FetchReservationStream = nameof(FetchReservation) + PmsType;
-        public const string ReservationLookupStream = nameof(ReservationLookup) + PmsType;
+        public static class Outbound
+        {
+            public static class OperaCloud
+            {
+                public const string UpdateRoomStatusStream = nameof(Outbound) + nameof(UpdateRoomStatus) + nameof(OperaCloud);
+                public const string FetchProfileStream = nameof(Outbound) + nameof(FetchProfile) + nameof(OperaCloud);
+                public const string FetchReservationStream = nameof(Outbound) + nameof(FetchReservation) + nameof(OperaCloud);
+                public const string ReservationLookupStream = nameof(Outbound) + nameof(ReservationLookup) + nameof(OperaCloud);
+            }
+        }
 
         public static class Inbound
         {
-            public const string RoomStatusUpdateStream = nameof(RoomStatusUpdate) + PmsType;
+            public static class V2
+            {
+                public const string RoomStatusUpdateStream = nameof(Inbound) + nameof(RoomStatusUpdate) + nameof(V2);
+            }
         }
     }
 }

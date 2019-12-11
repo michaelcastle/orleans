@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace OutboundAdapter.Grains.Opera
 {
-    [ImplicitStreamSubscription(Constants.Inbound.RoomStatusUpdateStream)]
+    [ImplicitStreamSubscription(Constants.Inbound.V2.RoomStatusUpdateStream)]
     public class RoomStatusUpdateConsumer : Grain, IGrainWithIntegerKey, IRoomStatusUpdateConsumer
     {
         private readonly List<IAsyncStream<string>> _streams = new List<IAsyncStream<string>>();
@@ -29,7 +29,7 @@ namespace OutboundAdapter.Grains.Opera
         {
             _streamProvider = GetStreamProvider("SMSProvider");
 
-            var stream = _streamProvider.GetStream<string>(this.GetPrimaryKey(), Constants.Inbound.RoomStatusUpdateStream);
+            var stream = _streamProvider.GetStream<string>(this.GetPrimaryKey(), Constants.Inbound.V2.RoomStatusUpdateStream);
             _streams.Add(stream);
             _handles.Add(await stream.SubscribeAsync(OnNextAsync, OnErrorAsync, OnCompletedAsync));
 
@@ -49,7 +49,7 @@ namespace OutboundAdapter.Grains.Opera
         public async Task OnNextAsync(string content, StreamSequenceToken token = null)
         {
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(HotelId);
-            if (!await hotel.IsConnected())
+            if (!await hotel.IsInboundConnected())
             {
                 throw new Exception("Hotel is not connected to the PMS. Please Connect first.");
             }

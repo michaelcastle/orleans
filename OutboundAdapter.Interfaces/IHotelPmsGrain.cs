@@ -5,10 +5,14 @@ namespace OutboundAdapter.Interfaces
 {
     public interface IHotelPmsGrain : Orleans.IGrainWithIntegerKey
     {
-        Task<string> StreamNamespace<T>();
-        Task<bool> IsConnected();
-        Task<HotelConfiguration> GetOutboundConfiguration();
+        Task<string> StreamNamespaceOutbound<T>();
+        Task<string> StreamNamespaceInbound<T>();
+        Task<bool> IsOutboundConnected();
+        Task<bool> IsInboundConnected();
+        Task<InboundConfiguration> GetInboundConfiguration();
+        Task<OutboundConfiguration> GetOutboundConfiguration();
+        Task SubscribeTo(InboundConfiguration configuration);
         Task IncrementAsync();
-        Task SaveOutboundConfigurationAsync(HotelConfiguration configuration);
+        Task SaveOutboundConfigurationAsync(OutboundConfiguration configuration);
     }
 }

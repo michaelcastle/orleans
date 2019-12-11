@@ -6,7 +6,7 @@ using OutboundAdapter.Interfaces.Models;
 using OutboundAdapter.Interfaces.Opera;
 using OutboundAdapter.Interfaces.Opera.Models;
 
-namespace PmsAdapter.Api.Controllers.Opera
+namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 {
     [Route("api/[controller]/opera")]
     [ApiController]
@@ -24,7 +24,7 @@ namespace PmsAdapter.Api.Controllers.Opera
         public async Task<IActionResult> UpdateRoomStatus(int hotelId, [FromBody]UpdateRoomStatusRequestDto content)
         {
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
-            if (!await hotel.IsConnected())
+            if (!await hotel.IsOutboundConnected())
             {
                 return BadRequest("Hotel is not connected to the PMS. Please Connect first.");
             }

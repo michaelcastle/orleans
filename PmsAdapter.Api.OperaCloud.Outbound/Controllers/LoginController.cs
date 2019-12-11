@@ -5,9 +5,9 @@ using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
 using OutboundAdapter.Interfaces.Opera;
 
-namespace PmsAdapter.Api.Controllers.Opera
+namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 {
-    [Route("api/[controller]/opera")]
+    [Route("api/[controller]/OperaCloud")]
     [ApiController]
     public class LoginController : ControllerBase
     {
@@ -19,11 +19,25 @@ namespace PmsAdapter.Api.Controllers.Opera
         }
 
         [HttpPost("Connect/{hotelId}")]
-        public async Task<IActionResult> Connect(int hotelId, [FromBody]HotelConfiguration configuration)
+        public async Task<IActionResult> Connect(int hotelId, [FromBody]OutboundConfiguration configuration)
         {
-            configuration.PmsType = Constants.PmsType;
+            configuration.PmsType = nameof(Constants.Outbound.OperaCloud);
+
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
             var task = hotel.SaveOutboundConfigurationAsync(configuration);
+            await task;
+            if (!task.IsCompletedSuccessfully)
+            {
+                return StatusCode(500);
+            }
+            return Ok();
+        }
+
+        [HttpPost("Subscribe/{hotelId}")]
+        public async Task<IActionResult> Subscribe(int hotelId, [FromBody]InboundConfiguration configuration)
+        {
+            var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
+            var task = hotel.SubscribeTo(configuration);
             await task;
             if (!task.IsCompletedSuccessfully)
             {

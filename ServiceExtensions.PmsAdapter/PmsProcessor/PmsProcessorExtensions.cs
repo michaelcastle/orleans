@@ -138,14 +138,12 @@ namespace ServiceExtensions.PmsAdapter.PmsProcessor
                 .GetService<IOptions<SubmitMessageSettings>>()
                 .Value ?? new SubmitMessageSettings();
 
-            switch (submitMessageSettings.QueueSettings.QueueType)
+            return submitMessageSettings.QueueSettings.QueueType switch
             {
-                case QueueType.RabbitMq:
-                    return serviceCollection.AddMassTransitRabbitMqServiceBus();
+                QueueType.RabbitMq => serviceCollection.AddMassTransitRabbitMqServiceBus(),
 
-                default:
-                    return serviceCollection.AddMassTransitInMemoryServiceBus(submitMessageSettings.QueueSettings.QueueName);
-            }
+                _ => serviceCollection.AddMassTransitInMemoryServiceBus(submitMessageSettings.QueueSettings.QueueName),
+            };
         }
 
         private static bool IsUsingRabbitMq(this IServiceCollection serviceCollection)

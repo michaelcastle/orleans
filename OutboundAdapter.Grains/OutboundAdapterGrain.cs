@@ -53,12 +53,12 @@ namespace OutboundAdapter.Grains
             await _semaphoreSlim.WaitAsync();
             try
             {
-                if (!await _hotel.IsConnected())
+                if (!await _hotel.IsOutboundConnected())
                 {
                     return await Task.FromException<OrderItem>(new Exception("Not connected"));
                 }
 
-                var streamNamespace = await _hotel.StreamNamespace<UpdateRoomStatus>();
+                var streamNamespace = await _hotel.StreamNamespaceOutbound<UpdateRoomStatus>();
                 var stream = _streamProvider.GetStream<UpdateRoomStatus>(this.GetPrimaryKey(), streamNamespace);
                 var streamed = stream.OnNextAsync(content);
                 await streamed;
@@ -74,7 +74,7 @@ namespace OutboundAdapter.Grains
                     HotelId = (int)this.GetPrimaryKeyLong(),
                     Number = number,
                     //Response = request,
-                    TotalNumber = configuration.TotalNumber
+                    //TotalNumber = configuration.TotalNumber
                 };
 
                 logger.LogDebug($"\n Message received: I am {orderItem.PrimaryKey}, number = '{orderItem.Number}, Response = '{orderItem.Response}'");

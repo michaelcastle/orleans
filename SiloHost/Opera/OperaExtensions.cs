@@ -14,7 +14,7 @@ namespace SiloHost.Opera
         {
             //https://www.stevejgordon.co.uk/introduction-to-httpclientfactory-aspnetcore
             var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10));
-            services.AddHttpClient(Constants.PmsType, client =>
+            services.AddHttpClient(nameof(Constants.Outbound.OperaCloud), client =>
             {
                 //client.DefaultRequestHeaders.Add("Content-Type", "text/xml");
                 //client.DefaultRequestHeaders.Add("SOAPAction", "http://webservices.micros.com/htng/2008B/SingleGuestItinerary#UpdateRoomStatus");

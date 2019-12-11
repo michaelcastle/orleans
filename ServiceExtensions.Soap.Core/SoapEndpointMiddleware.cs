@@ -38,7 +38,7 @@ namespace ServiceExtensions.Soap.Core
 
         public async Task Invoke(HttpContext httpContext, IServiceProvider serviceProvider)
         {
-            httpContext.Request.EnableRewind();
+            httpContext.Request.EnableBuffering();
             if (httpContext.Request.Path.Equals(_endpointPath, _pathComparisonStrategy))
             {
                 _logger.LogDebug($"Received SOAP Request for {httpContext.Request.Path} ({httpContext.Request.ContentLength ?? 0} bytes)");

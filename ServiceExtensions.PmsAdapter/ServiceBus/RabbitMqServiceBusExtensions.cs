@@ -40,8 +40,8 @@ namespace ServiceExtensions.PmsAdapter.ServiceBus
                     hostConfigurator.Password(submitMessageSettings.QueueSettings.RabbitMqSettings.Password);
                 });
 
-                configure.UseExtensionsLogging(provider.GetService<ILoggerFactory>());
-                configure.ReceiveEndpoint(host, submitMessageSettings.QueueSettings.QueueName ?? "opera_cloud", endpoint =>
+                configure.SetLoggerFactory(provider.GetService<ILoggerFactory>());
+                configure.ReceiveEndpoint(submitMessageSettings.QueueSettings.QueueName ?? "opera_cloud", endpoint =>
                 {
                     //endpoint.UseScheduledRedelivery(r => r.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(7), TimeSpan.FromMinutes(15)));
                     //endpoint.UseMessageRetry(r => r.Immediate(5));

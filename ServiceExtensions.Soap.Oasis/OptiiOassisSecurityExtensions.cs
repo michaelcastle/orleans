@@ -18,17 +18,16 @@ namespace ServiceExtensions.Soap.Oasis
             var configuration = serviceCollection.BuildServiceProvider()
                 .GetService<IConfiguration>();
 
-            serviceCollection
-                .Configure<OasisSettings>(configuration.GetSection("OasisSettings")); // used for IOperationErrorBodyWriterService, OperaErrorBodyWriter
+            serviceCollection.Configure<OasisSettings>(configuration.GetSection("OasisSettings")); // used for IOperationErrorBodyWriterService, OperaErrorBodyWriter
 
-            serviceCollection
-                .AddOptiiAuthentication<TU>(); // This is needed for both pms processor and oasis security
+            serviceCollection.AddOptiiAuthentication<TU>(); // This is needed for both pms processor and oasis security
 
             serviceCollection.TryAddSingleton<IResponseMessageService, OasisResponseService>();
             serviceCollection.TryAddSingleton<IOasisSecurityService, OasisSecurityService>();
             serviceCollection.TryAddSingleton<IMessageFilter, OasisMessageFilter>();
 
             // Authentication
+            serviceCollection.AddMemoryCache();
             serviceCollection.TryAddSingleton<ILoginCacheService, OptiiLoginCache>();
             serviceCollection.TryAddSingleton<ICachedExternalLogin, CachedExternalLogin>();
 
