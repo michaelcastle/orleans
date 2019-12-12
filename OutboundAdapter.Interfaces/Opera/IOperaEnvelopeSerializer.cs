@@ -7,6 +7,7 @@ namespace OutboundAdapter.Interfaces.Opera
     {
         string Serialize<T>(T envelope, XmlQualifiedName[] xmlNamespaces);
         T Deserialize<T>(string xmlString);
+        T DeserialiseNode<T>(string message, string nodeName);
         HeaderDto GetHeaderRequest(string action);
     }
 }

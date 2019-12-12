@@ -17,6 +17,11 @@ namespace OutboundAdapter.Interfaces.Opera
 
         public static class Inbound
         {
+            public static class V2Generic
+            {
+                public const string RoomStatusUpdateStream = nameof(Inbound) + nameof(RoomStatusUpdate) + nameof(V2Generic);
+            }
+
             public static class V2
             {
                 public const string RoomStatusUpdateStream = nameof(Inbound) + nameof(RoomStatusUpdate) + nameof(V2);

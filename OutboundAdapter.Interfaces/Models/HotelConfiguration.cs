@@ -15,6 +15,7 @@ namespace OutboundAdapter.Interfaces.Models
     [Serializable]
     public class InboundConfiguration
     {
+        public string Url { get; set; }
         public string InboundType { get; set; }
         public Guid ClientToken { get; set; }
         public Credentials Credentials { get; set; }

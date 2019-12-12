@@ -1,30 +1,33 @@
 ﻿using Orleans;
+using Orleans.Concurrency;
 using OutboundAdapter.Interfaces.Opera;
 using OutboundAdapter.Interfaces.Opera.Models;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace OutboundAdapter.Grains.Opera
 {
+    [StatelessWorker]
     public class InboundMappingOperaGrains : Grain, IInboundMappingGrains
     {
-        Task<RoomStatusUpdateBERequestDto> IInboundMappingGrains.MapRoomStatusUpdateBE(string message)
+        private readonly IOperaEnvelopeSerializer _operaRequestSerializer;
+
+        public InboundMappingOperaGrains(IOperaEnvelopeSerializer operaRequestSerializer)
         {
-            RoomStatusUpdateBERequestDto roomStatusUpdateBeRequestDto;
-            var doc = XDocument.Parse(message.Trim());
-            var reservationNodes = doc.Descendants().Where(o => o.Name.LocalName == "RoomStatusUpdateBERequest");
-            var content = reservationNodes.First().ToString();
+            _operaRequestSerializer = operaRequestSerializer;
+        }
 
-            var serializer = new XmlSerializer(typeof(RoomStatusUpdateBERequestDto));
-            using (var reader = new StringReader(content))
-            {
-                roomStatusUpdateBeRequestDto = (RoomStatusUpdateBERequestDto)serializer.Deserialize(reader);
-            }
+        async Task<RoomStatusUpdateBERequestDto> IInboundMappingGrains.MapRoomStatusUpdateBE(string message)
+        {
+            return await Task.Run(() => {
+                return _operaRequestSerializer.DeserialiseNode<RoomStatusUpdateBERequestDto>(message, "RoomStatusUpdateBERequest");
+            });
+        }
 
-            return Task.FromResult(roomStatusUpdateBeRequestDto);
+        async Task<UpdateRoomStatusResponseBodyDto> IInboundMappingGrains.MapUpdateRoomStatusResponse(string message)
+        {
+            return await Task.Run(() => {
+                return _operaRequestSerializer.DeserialiseNode<UpdateRoomStatusResponseBodyDto>(message, "RoomStatusUpdateBEResponse");
+            });
         }
     }
 }

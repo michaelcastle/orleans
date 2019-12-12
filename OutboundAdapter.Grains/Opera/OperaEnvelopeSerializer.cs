@@ -6,6 +6,8 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Xml.Linq;
+using System.Linq;
 
 namespace OutboundAdapter.Grains.Opera
 {
@@ -57,6 +59,15 @@ namespace OutboundAdapter.Grains.Opera
             }
 
             return requestDto;
+        }
+
+        public T DeserialiseNode<T>(string xmlString, string nodeName)
+        {
+            var doc = XDocument.Parse(xmlString.Trim());
+            var reservationNodes = doc.Descendants().Where(o => o.Name.LocalName == nodeName);
+            var content = reservationNodes.First().ToString();
+
+            return Deserialize<T>(content);
         }
 
         public HeaderDto GetHeaderRequest(string action)

@@ -33,6 +33,11 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
             return Ok();
         }
 
+        public async Task<IActionResult> SubscribeFrom(int hotelId)
+        {
+            return Ok();
+        }
+
         [HttpPost("Subscribe/{hotelId}")]
         public async Task<IActionResult> Subscribe(int hotelId, [FromBody]InboundConfiguration configuration)
         {

@@ -46,7 +46,7 @@ namespace OutboundAdapter.Grains.Opera
             throw new NotImplementedException();
         }
 
-        public async Task OnNextAsync(string content, StreamSequenceToken token = null)
+        public async Task OnNextAsync(string content, StreamSequenceToken token = null) 
         {
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(HotelId);
             if (!await hotel.IsInboundConnected())
