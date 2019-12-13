@@ -1,7 +1,10 @@
-﻿namespace ServiceExtensions.PmsAdapter.SignIn.Authentication
+﻿using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
+
+namespace ServiceExtensions.PmsAdapter.SignIn.Authentication
 {
     public interface ISecurityAuthenticator
     {
-        bool Validate(string username, string password, string hotelId);
+        bool Validate(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password);
     }
 }

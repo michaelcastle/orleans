@@ -1,4 +1,6 @@
-﻿using ServiceExtensions.PmsAdapter.SignIn.Authentication;
+﻿using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
+using ServiceExtensions.PmsAdapter.SignIn.Authentication;
 using ServiceExtensions.PmsAdapter.SignIn.CachedLogin;
 using System;
 
@@ -13,7 +15,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn
             _cachedLoginService = cachedLoginService;
         }
 
-        public bool Validate(string username, string password, string hotelId)
+        public bool Validate(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
@@ -21,7 +23,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn
             }
 
             // Login
-            var userSession = _cachedLoginService.ExternalLogin(username, password, "External Login", hotelId);
+            var userSession = _cachedLoginService.ExternalLogin(clientFactory, username, password);
             if (userSession != null && userSession.IsAuthorised && userSession.SessionId != Guid.Empty)
             {
                 return userSession.IsAuthorised;

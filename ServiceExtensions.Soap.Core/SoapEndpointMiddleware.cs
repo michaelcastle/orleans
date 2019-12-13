@@ -8,7 +8,6 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceExtensions.Soap.Core.Response;
@@ -186,7 +185,7 @@ namespace ServiceExtensions.Soap.Core
             {
                 foreach (var messageFilter in messageFilters)
                 {
-                    messageFilter.OnRequestExecuting(requestMessage);
+                    messageFilter.OnRequestExecuting(requestMessage, httpContext.Request.Path);
                 }
             }
             catch (Exception ex)

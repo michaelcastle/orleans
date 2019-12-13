@@ -60,6 +60,7 @@ namespace SiloHost
                 //.UseDashboard(options => { options.HideTrace = true; })
                 .AddMemoryGrainStorage(name: "PubSubStore")
                 .AddMemoryGrainStorage(name: "hotelConfigurationStore")
+                .AddMemoryGrainStorage(name: "oracleCloudStore")
                 .ConfigureServices(services => {
                     services.AddOpera();
 

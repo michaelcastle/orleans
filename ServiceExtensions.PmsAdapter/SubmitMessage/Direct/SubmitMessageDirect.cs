@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 using ServiceExtensions.PmsAdapter.PmsProcessor;
 
 namespace ServiceExtensions.PmsAdapter.SubmitMessage.Direct
@@ -9,11 +11,13 @@ namespace ServiceExtensions.PmsAdapter.SubmitMessage.Direct
     {
         private readonly ILogger<ISubmitMessageHandler> _logger;
         private readonly IPmsProcessorService _pmsProcessorService;
+        private readonly IClientChannelFactory<IPMSInterfaceContractChannel> _clientFactory;
 
-        public InboundPmsAdapter(ILogger<ISubmitMessageHandler> logger, IPmsProcessorService pmsProcessorService)
+        public InboundPmsAdapter(ILogger<ISubmitMessageHandler> logger, IPmsProcessorService pmsProcessorService, IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory)
         {
             _logger = logger;
             _pmsProcessorService = pmsProcessorService;
+            _clientFactory = clientFactory;
         }
 
         public async Task<SubmitMessageResponse> Submit(SubmitMessage submit)
@@ -22,7 +26,7 @@ namespace ServiceExtensions.PmsAdapter.SubmitMessage.Direct
 
             try
             {
-                var success = await _pmsProcessorService.SubmitMessage(submit.Username, submit.Password, submit.Message, submit.HotelId);
+                var success = await _pmsProcessorService.SubmitMessage(_clientFactory, submit.Username, submit.Password, submit.Message);
                 return new SubmitMessageResponse
                 {
                     IsSuccessful = success

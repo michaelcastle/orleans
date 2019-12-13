@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Runtime.Serialization;
 using System.Security.Authentication;
@@ -26,10 +27,9 @@ namespace ServiceExtensions.Soap.Core
             _authInvalidErrorMessage = authInvalidErrorMessage;
         }
 
-        public void OnRequestExecuting(Message message)
+        public void OnRequestExecuting(Message message, PathString path)
         {
-            WsUsernameToken wsUsernameToken = null;
-
+            WsUsernameToken wsUsernameToken;
             try
             {
                 wsUsernameToken = GetWsUsernameToken(message);

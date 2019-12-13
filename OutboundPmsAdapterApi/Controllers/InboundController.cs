@@ -40,6 +40,7 @@ namespace PmsAdapter.Api.Controllers.Opera
             try
             {
                 var oasisSecurity = _securityObjectService.GetOasisSecurity(MessageHeaders);
+
                 var response = _submitMessageHandler.SubmitRoomStatusUpdateBE(new SubmitMessage
                 {
                     HotelId = HotelId,

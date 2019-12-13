@@ -5,6 +5,8 @@ using Polly;
 using System;
 using System.Threading.Tasks;
 using ServiceExtensions.PmsAdapter.SubmitMessage.Direct;
+using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 
 namespace ServiceExtensions.PmsAdapter.SubmitMessage.ToQueue
 {
@@ -14,12 +16,12 @@ namespace ServiceExtensions.PmsAdapter.SubmitMessage.ToQueue
         private readonly ILogger<ISubmitMessageHandler> _logger;
         private readonly ISubmitMessageHandler _submitMessageDirect;
 
-        public SubmitMessageToQueue(IPublishEndpoint publishEndpoint, ILogger<ISubmitMessageHandler> logger, IPmsProcessorService pmsProcessorService)
+        public SubmitMessageToQueue(IPublishEndpoint publishEndpoint, ILogger<ISubmitMessageHandler> logger, IPmsProcessorService pmsProcessorService, IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory)
         {
             _publishEndpoint = publishEndpoint;
             _logger = logger;
 
-            _submitMessageDirect = new InboundPmsAdapter(logger, pmsProcessorService);
+            _submitMessageDirect = new InboundPmsAdapter(logger, pmsProcessorService, clientFactory);
         }
 
         public async Task<SubmitMessageResponse> Submit(SubmitMessage submitMessage)

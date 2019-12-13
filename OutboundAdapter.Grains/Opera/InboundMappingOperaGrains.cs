@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace OutboundAdapter.Grains.Opera
 {
     [StatelessWorker]
-    public class InboundMappingOperaGrains : Grain, IInboundMappingGrains
+    public class InboundMappingOperaGrains : Grain, IInboundMappingOperaCloudGrains
     {
         private readonly IOperaEnvelopeSerializer _operaRequestSerializer;
 
@@ -16,14 +16,14 @@ namespace OutboundAdapter.Grains.Opera
             _operaRequestSerializer = operaRequestSerializer;
         }
 
-        async Task<RoomStatusUpdateBERequestDto> IInboundMappingGrains.MapRoomStatusUpdateBE(string message)
+        async Task<RoomStatusUpdateBERequestDto> IInboundMappingOperaCloudGrains.MapRoomStatusUpdateBE(string message)
         {
             return await Task.Run(() => {
                 return _operaRequestSerializer.DeserialiseNode<RoomStatusUpdateBERequestDto>(message, "RoomStatusUpdateBERequest");
             });
         }
 
-        async Task<UpdateRoomStatusResponseBodyDto> IInboundMappingGrains.MapUpdateRoomStatusResponse(string message)
+        async Task<UpdateRoomStatusResponseBodyDto> IInboundMappingOperaCloudGrains.MapUpdateRoomStatusResponse(string message)
         {
             return await Task.Run(() => {
                 return _operaRequestSerializer.DeserialiseNode<UpdateRoomStatusResponseBodyDto>(message, "RoomStatusUpdateBEResponse");

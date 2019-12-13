@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 using System;
 
 namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
@@ -14,22 +16,22 @@ namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
             _memoryCache = memoryCache;
         }
 
-        public void ClearCache(string username, string hotelId)
+        public void ClearCache(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username)
         {
             // can use "" for the password since it will clear anything which starts with the key given
-            var cacheKey = GetCacheKey(username, hotelId);
+            var cacheKey = GetCacheKey(clientFactory, username);
             _memoryCache.Remove(cacheKey);
         }
 
-        public string GetCacheKey(string username, string hotelId)
+        public string GetCacheKey(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username)
         {
-            return $"{UserSessionPrefix}_{username}_{hotelId}";
+            return $"{UserSessionPrefix}_{username}_{clientFactory.EndPoint.Address.Uri.AbsoluteUri}";
         }
 
-        public void UpdateCache(ICachedSessionItem session, string username, string password, string hotelId)
+        public void UpdateCache(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, ICachedSessionItem session, string username, string password)
         {
             // Only cache a login which is authorised so if someone is not authenticated it can retry and potentially work if the password was updated/session expired etc.
-            var cacheKey = GetCacheKey(username, hotelId);
+            var cacheKey = GetCacheKey(clientFactory, username);
             var memoryCacheOption = new MemoryCacheEntryOptions()
             {
                 SlidingExpiration = new TimeSpan(0, 30, 0)
@@ -38,7 +40,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
             _memoryCache.Set(cacheKey, session, memoryCacheOption);
         }
 
-        public bool TryGetValue(string username, string password, string hotelId, out ICachedSessionItem session)
+        public bool TryGetValue(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password, out ICachedSessionItem session)
         {
             session = null;
 
@@ -47,7 +49,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
                 return false;
             }
 
-            var key = GetCacheKey(username, hotelId);
+            var key = GetCacheKey(clientFactory, username);
             var isFound = _memoryCache.TryGetValue(key, out session);
             if (!isFound)
             {
@@ -57,7 +59,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
             var isCredentialsEqual = session.CredentialsEqual(username, password);
             if (!isCredentialsEqual)
             {
-                ClearCache(username, hotelId);
+                ClearCache(clientFactory, username);
             }
 
             return isCredentialsEqual;

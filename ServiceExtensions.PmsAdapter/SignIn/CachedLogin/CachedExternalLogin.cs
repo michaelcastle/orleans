@@ -1,4 +1,7 @@
-﻿namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
+﻿using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
+
+namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
 {
     public class CachedExternalLogin : ICachedExternalLogin
     {
@@ -11,36 +14,36 @@
             _loginCacheService = loginCacheService;
         }
 
-        public SessionItem ExternalLogin(string username, string password, string lastAction, string hotelId)
+        public SessionItem ExternalLogin(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
         {
-            var isFound = _loginCacheService.TryGetValue(username, password, hotelId, out ICachedSessionItem cachedSession);
+            var isFound = _loginCacheService.TryGetValue(clientFactory, username, password, out ICachedSessionItem cachedSession);
             if (isFound)
             {
                 return (SessionItem)cachedSession;
             }
 
-            var userSessionDto = _userAuthenticationService.SignIn(username, password, lastAction, hotelId);
+            var userSessionDto = _userAuthenticationService.SignIn(clientFactory, username, password);
             var session = new SessionItem(username, password, userSessionDto);
             if (session.IsAuthorised)
             {
-                _loginCacheService.UpdateCache(session, username, password, hotelId);
+                _loginCacheService.UpdateCache(clientFactory, session, username, password);
             }
             else
             {
-                _loginCacheService.ClearCache(username, hotelId);
+                _loginCacheService.ClearCache(clientFactory, username);
             }
             return session;
         }
 
-        public void ClearCache(string username, string hotelId)
+        public void ClearCache(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username)
         {
-            _loginCacheService.ClearCache(username, hotelId);
+            _loginCacheService.ClearCache(clientFactory, username);
         }
 
-        public SessionItem ExternalLoginNoCache(string username, string password, string lastAction, string hotelId)
+        public SessionItem ExternalLoginNoCache(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
         {
-            _loginCacheService.ClearCache(username, hotelId);
-            return ExternalLogin(username, password, lastAction, hotelId);
+            _loginCacheService.ClearCache(clientFactory, username);
+            return ExternalLogin(clientFactory, username, password);
         }
     }
 }

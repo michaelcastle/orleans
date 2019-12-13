@@ -1,9 +1,12 @@
-﻿namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
+﻿using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
+
+namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
 {
     public interface ICachedExternalLogin
     {
-        SessionItem ExternalLoginNoCache(string username, string password, string lastAction, string hotelId);
-        SessionItem ExternalLogin(string username, string password, string lastAction, string hotelId);
-        void ClearCache(string username, string hotelId);
+        SessionItem ExternalLoginNoCache(IClientChannelFactory<IPMSInterfaceContractChannel> _clientFactory, string username, string password);
+        SessionItem ExternalLogin(IClientChannelFactory<IPMSInterfaceContractChannel> _clientFactory, string username, string password);
+        void ClearCache(IClientChannelFactory<IPMSInterfaceContractChannel> _clientFactory, string username);
     }
 }

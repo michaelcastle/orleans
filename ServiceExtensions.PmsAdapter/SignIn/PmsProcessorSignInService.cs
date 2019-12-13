@@ -7,18 +7,16 @@ namespace ServiceExtensions.PmsAdapter.SignIn
 {
     public class PmsProcessorSignInService : ISessionItemAuthenticationService
     {
-        private readonly IClientChannelFactory<IPMSInterfaceContractChannel> _clientFactory;
         private readonly EncryptionSettings _encryptionSettings;
 
-        public PmsProcessorSignInService(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, IOptions<EncryptionSettings> encryptionSettings)
+        public PmsProcessorSignInService(IOptions<EncryptionSettings> encryptionSettings)
         {
-            _clientFactory = clientFactory;
             _encryptionSettings = encryptionSettings.Value;
         }
 
-        public SessionItem SignIn(string username, string password, string lastAction, string hotelId)
+        public SessionItem SignIn(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
         {
-            var client = _clientFactory.CreateChannel();
+            var client = clientFactory.CreateChannel();
             try
             {
                 if (_encryptionSettings.EncryptCredentials)
@@ -45,7 +43,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn
             }
             finally
             {
-                _clientFactory.CloseChannel(client);
+                clientFactory.CloseChannel(client);
             }
         }
     }

@@ -4,12 +4,17 @@ using OutboundAdapter.Interfaces.Models;
 using System.Threading.Tasks;
 using Orleans.Runtime;
 using static OutboundAdapter.Interfaces.Opera.Constants;
+using Orleans.Streams;
+using System.Collections.Generic;
 
 namespace OutboundAdapter.Grains
 {
     public class HotelPmsGrain : Grain, IHotelPmsGrain
     {
         private readonly IPersistentState<HotelConfiguration> _hotelConfiguration;
+
+        private readonly List<IAsyncStream<string>> _consumers = new List<IAsyncStream<string>>();
+        private readonly List<StreamSubscriptionHandle<string>> consumerHandles = new List<StreamSubscriptionHandle<string>>();
 
         Task<bool> IHotelPmsGrain.IsOutboundConnected()
         {
@@ -54,9 +59,19 @@ namespace OutboundAdapter.Grains
         }
 
         // TODO: Change this to streaming and subscribing multiple receivers to input
-        async Task IHotelPmsGrain.SubscribeTo(InboundConfiguration configuration)
+        async Task IHotelPmsGrain.SubscribeToResponses(InboundConfiguration configuration, string provider, IList<string> streamNamespaces, ISubscribeToResponseObserver observer)
         {
             _hotelConfiguration.State.InboundConfiguration = configuration;
+
+            IStreamProvider streamProvider = base.GetStreamProvider(provider);
+            foreach (var streamNamespace in streamNamespaces)
+            {
+                var stream = streamProvider.GetStream<string>(this.GetPrimaryKey(), streamNamespace);
+                _consumers.Add(stream);
+                await observer.SetConfiguration(configuration);
+                consumerHandles.Add(await stream.SubscribeAsync(observer));
+            }
+
             await _hotelConfiguration.WriteStateAsync();
         }
 
@@ -65,9 +80,9 @@ namespace OutboundAdapter.Grains
             return Task.FromResult($"{nameof(Outbound)}{typeof(T).Name}{_hotelConfiguration.State.OutboundConfiguration.PmsType}");
         }
 
-        public Task<string> StreamNamespaceInbound<T>()
+        public Task<string> StreamNamespaceInbound<T, P>()
         {
-            return Task.FromResult($"{nameof(Inbound)}{typeof(T).Name}{_hotelConfiguration.State.InboundConfiguration.InboundType}");
+            return Task.FromResult($"{nameof(Inbound)}{typeof(T).Name}{typeof(P).Name}");
         }
     }
 }

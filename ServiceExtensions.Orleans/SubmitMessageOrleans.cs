@@ -5,6 +5,7 @@ using Orleans;
 using Orleans.Streams;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
+using OutboundAdapter.Interfaces.Opera;
 using ServiceExtensions.PmsAdapter.SubmitMessage;
 
 namespace ServiceExtensions.Orleans
@@ -39,7 +40,7 @@ namespace ServiceExtensions.Orleans
                     };
                 }
 
-                var streamNamespace = await hotel.StreamNamespaceInbound<RoomStatusUpdate>();
+                var streamNamespace = await hotel.StreamNamespaceInbound<RoomStatusUpdate, Constants.Outbound.OperaCloud>();
                 var stream = _streamProvider.GetStream<string>(hotel.GetPrimaryKey(), streamNamespace);
 
                 var streamed = stream.OnNextAsync(submit.Message);

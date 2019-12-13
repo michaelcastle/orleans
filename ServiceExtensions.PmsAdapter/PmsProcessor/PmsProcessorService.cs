@@ -11,42 +11,39 @@ namespace ServiceExtensions.PmsAdapter.PmsProcessor
 {
     public class PmsProcessorService : IPmsProcessorService
     {
-        private const string LastAction = "External Login";
-
         private readonly ILogger<PmsProcessorService> _logger;
         private readonly ICachedExternalLogin _cachedLoginService;
-        private readonly IClientChannelFactory<IPMSInterfaceContractChannel> _clientFactory;
 
-        public PmsProcessorService(ILogger<PmsProcessorService> logger, ICachedExternalLogin cachedLoginService, IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory)
+        public PmsProcessorService(ILogger<PmsProcessorService> logger, ICachedExternalLogin cachedLoginService)
         {
             _logger = logger;
             _cachedLoginService = cachedLoginService;
-            _clientFactory = clientFactory;
         }
 
-        public async Task<bool> SubmitMessage(string username, string password, string messageString, string hotelId)
+        public async Task<bool> SubmitMessage(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password, string messageString)
         {
-            var userSession = _cachedLoginService.ExternalLogin(username, password, LastAction, hotelId);
+
+            var userSession = _cachedLoginService.ExternalLogin(clientFactory, username, password);
             if (userSession == null || !userSession.IsAuthorised || userSession.SessionId == Guid.Empty)
             {
                 _logger.LogError("Failed login to PmsProcessor, check settings or credentials");
                 return false;
             }
 
-            var interfaceReturn = await ProcessSubmitMessage(userSession, password, messageString, hotelId);
+            var interfaceReturn = await ProcessSubmitMessage(clientFactory, userSession, password, messageString);
             var result = interfaceReturn.ReturnType == InterfaceReturn.enReturnType.Success;
             if (!result)
             {
-                _logger.LogError("Error: [{AbsolutePath}] SubmitMessage\n{messageString}\nReturnType: '{ReturnType}', InterfaceReturn: '{@interfaceReturn}'", _clientFactory.EndPoint.Address.Uri.AbsolutePath, messageString, interfaceReturn.ReturnType, interfaceReturn.FailureReason);
+                _logger.LogError("Error: [{AbsolutePath}] SubmitMessage\n{messageString}\nReturnType: '{ReturnType}', InterfaceReturn: '{@interfaceReturn}'", clientFactory.EndPoint.Address.Uri.AbsolutePath, messageString, interfaceReturn.ReturnType, interfaceReturn.FailureReason);
                 throw new Exception(interfaceReturn.FailureReason);
             }
 
             return true;
         }
 
-        private async Task<InterfaceReturn> ProcessSubmitMessage(SessionItem userSessionItem, string password, string messageString, string hotelId)
+        private async Task<InterfaceReturn> ProcessSubmitMessage(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, SessionItem userSessionItem, string password, string messageString)
         {
-            var client = _clientFactory.CreateChannel();
+            var client = clientFactory.CreateChannel();
             
             try
             {
@@ -55,7 +52,7 @@ namespace ServiceExtensions.PmsAdapter.PmsProcessor
                 if (interfaceReturn.ReturnType != InterfaceReturn.enReturnType.SessionEnded)
                     return interfaceReturn;
 
-                var userSession = _cachedLoginService.ExternalLoginNoCache(userSessionItem.UserName, password, LastAction, hotelId);
+                var userSession = _cachedLoginService.ExternalLoginNoCache(clientFactory, userSessionItem.UserName, password);
                 if (userSession == null || !userSession.IsAuthorised || userSession.SessionId == Guid.Empty)
                 {
                     return new InterfaceReturn
@@ -105,7 +102,7 @@ namespace ServiceExtensions.PmsAdapter.PmsProcessor
             }
             finally
             {
-                _clientFactory.CloseChannel(client);
+                clientFactory.CloseChannel(client);
             }
         }
     }

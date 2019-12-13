@@ -1,32 +1,29 @@
-using System;
+﻿using System;
 using System.Security.Authentication;
 using System.ServiceModel.Channels;
 using Microsoft.AspNetCore.Http;
-using ServiceExtensions.PmsAdapter.ClientChannel;
-using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
-using ServiceExtensions.PmsAdapter.SignIn.Authentication;
+using Orleans;
+using OutboundAdapter.Interfaces.Opera.Inbound;
 using ServiceExtensions.Soap.Core;
 using ServiceExtensions.Soap.Core.Oasis;
 
-namespace ServiceExtensions.Soap.Oasis
+namespace OutboundAdapter.Grains.Opera
 {
-    public class OasisMessageFilter : IMessageFilter 
+    public class LinkControllerOasisMessageFilter : IMessageFilter
     {
         private const string AuthMissingErrorMessage = "Referenced security token could not be retrieved";
         public readonly string AuthTimestampMessage = "Invalid Timestamp - timestamp was not valid";
         public readonly string AuthInvalidErrorMessage = "Authentication error: Authentication failed: the supplied credential are not valid";
 
         public OasisSecurity OasisSecurity;
+        private readonly IClusterClient _clusterClient;
 
-        private readonly ISecurityAuthenticator _authenticator;
         private readonly IOasisSecurityService _oasisSecurityService;
-        private readonly IClientChannelFactory<IPMSInterfaceContractChannel> _clientFactory;
 
-        public OasisMessageFilter(ISecurityAuthenticator authenticator, IOasisSecurityService oasisSecurityService, IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory)
+        public LinkControllerOasisMessageFilter(IOasisSecurityService oasisSecurityService, IClusterClient clusterClient)
         {
-            _authenticator = authenticator;
+            _clusterClient = clusterClient;
             _oasisSecurityService = oasisSecurityService;
-            _clientFactory = clientFactory;
         }
 
         public void OnRequestExecuting(Message message, PathString path)
@@ -40,7 +37,7 @@ namespace ServiceExtensions.Soap.Oasis
             }
             catch (Exception ex)
             {
-                _ = ex.Message;
+                var errmessage = ex.Message;
                 throw new AuthenticationException(AuthMissingErrorMessage);
             }
 
@@ -51,7 +48,7 @@ namespace ServiceExtensions.Soap.Oasis
 
             try
             {
-                if (!ValidateOasisUsernameToken(oasisUsernameToken))
+                if (!ValidateOasisUsernameToken(oasisUsernameToken, path))
                 {
                     throw new InvalidCredentialException($"{AuthInvalidErrorMessage}. Username: {oasisUsernameToken.Username}");
                 }
@@ -72,9 +69,24 @@ namespace ServiceExtensions.Soap.Oasis
             return (DateTimeOffset.Now > oasisSecurity.Timestamp.Created && DateTimeOffset.Now < oasisSecurity.Timestamp.Expires);
         }
 
-        private bool ValidateOasisUsernameToken(OasisUsernameToken oasisUsernameToken)
+        private bool ValidateOasisUsernameToken(OasisUsernameToken oasisUsernameToken, PathString path)
         {
-            return _authenticator.Validate(_clientFactory, oasisUsernameToken.Username, oasisUsernameToken.Password);
+            if (string.IsNullOrEmpty(oasisUsernameToken.Username) && !string.IsNullOrEmpty(oasisUsernameToken.Password))
+            {
+                return false;
+            }
+
+            var queryString = new Uri(path.Value).Query;
+            var queryDictionary = System.Web.HttpUtility.ParseQueryString(queryString);
+            var hotelId = queryDictionary.Get("hotelid");
+            if (string.IsNullOrEmpty(hotelId))
+            {
+                return false;
+            }
+            int.TryParse(hotelId, out int hotelIdInt);
+            var authenticatorGrain = _clusterClient.GetGrain<IAuthenticateOracleCloud>(hotelIdInt);
+
+            return authenticatorGrain.Validate(oasisUsernameToken.Username, oasisUsernameToken.Password).Result;
         }
     }
 }

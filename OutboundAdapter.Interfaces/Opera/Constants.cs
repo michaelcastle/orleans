@@ -6,7 +6,7 @@ namespace OutboundAdapter.Interfaces.Opera
     {
         public static class Outbound
         {
-            public static class OperaCloud
+            public class OperaCloud
             {
                 public const string UpdateRoomStatusStream = nameof(Outbound) + nameof(UpdateRoomStatus) + nameof(OperaCloud);
                 public const string FetchProfileStream = nameof(Outbound) + nameof(FetchProfile) + nameof(OperaCloud);
