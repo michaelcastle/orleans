@@ -3,6 +3,7 @@ using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 using ServiceExtensions.PmsAdapter.SignIn.Authentication;
 using ServiceExtensions.PmsAdapter.SignIn.CachedLogin;
 using System;
+using System.Threading.Tasks;
 
 namespace ServiceExtensions.PmsAdapter.SignIn
 {
@@ -15,7 +16,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn
             _cachedLoginService = cachedLoginService;
         }
 
-        public bool Validate(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
+        public async Task<bool> Validate(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
@@ -23,7 +24,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn
             }
 
             // Login
-            var userSession = _cachedLoginService.ExternalLogin(clientFactory, username, password);
+            var userSession = await _cachedLoginService.ExternalLogin(clientFactory, username, password);
             if (userSession != null && userSession.IsAuthorised && userSession.SessionId != Guid.Empty)
             {
                 return userSession.IsAuthorised;

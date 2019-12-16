@@ -10,6 +10,11 @@ namespace OutboundAdapter.Grains.Api
 {
     public class SubmitMessageApiConsumer : Grain, ISubmitMessageApiConsumer
     {
+        public Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)
+        {
+            throw new NotImplementedException();
+        }
+
         Task IAsyncObserver<string>.OnCompletedAsync()
         {
             throw new NotImplementedException();

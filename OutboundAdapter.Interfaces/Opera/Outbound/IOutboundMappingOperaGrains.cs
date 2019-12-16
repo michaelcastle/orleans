@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace OutboundAdapter.Interfaces.Opera
 {
-    public interface IOutboundMappingGrains : Orleans.IGrainWithIntegerKey
+    public interface IOutboundMappingOperaGrains : Orleans.IGrainWithIntegerKey
     {
         Task<string> MapFetchProfile(FetchProfile request);
         Task<string> MapFetchReservation(FetchReservation request);

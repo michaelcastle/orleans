@@ -2,6 +2,7 @@
 using ServiceExtensions.PmsAdapter.ClientChannel;
 using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 using ServiceExtensions.PmsAdapter.Encryption;
+using System.Threading.Tasks;
 
 namespace ServiceExtensions.PmsAdapter.SignIn
 {
@@ -14,7 +15,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn
             _encryptionSettings = encryptionSettings.Value;
         }
 
-        public SessionItem SignIn(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
+        public async Task<SessionItem> SignIn(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
         {
             var client = clientFactory.CreateChannel();
             try
@@ -27,7 +28,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn
                 }
 
                 var signinRequest = new SigninRequest(username, password);
-                var signin = client.SigninAsync(signinRequest).Result;
+                var signin = await client.SigninAsync(signinRequest);
 
                 if (signin.InterfaceSigninValues == null)
                 {

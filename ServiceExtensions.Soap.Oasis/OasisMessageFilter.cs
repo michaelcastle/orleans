@@ -29,7 +29,7 @@ namespace ServiceExtensions.Soap.Oasis
             _clientFactory = clientFactory;
         }
 
-        public void OnRequestExecuting(Message message, PathString path)
+        public void OnRequestExecuting(Message message, HttpRequest path)
         {
             OasisUsernameToken oasisUsernameToken;
 
@@ -74,7 +74,7 @@ namespace ServiceExtensions.Soap.Oasis
 
         private bool ValidateOasisUsernameToken(OasisUsernameToken oasisUsernameToken)
         {
-            return _authenticator.Validate(_clientFactory, oasisUsernameToken.Username, oasisUsernameToken.Password);
+            return _authenticator.Validate(_clientFactory, oasisUsernameToken.Username, oasisUsernameToken.Password).Result;
         }
     }
 }

@@ -29,7 +29,7 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
                 return BadRequest("Hotel is not connected to the PMS. Please Connect first.");
             }
 
-            var mapper = _clusterClient.GetGrain<IOutboundMappingGrains>(hotelId);
+            var mapper = _clusterClient.GetGrain<IOutboundMappingOperaGrains>(hotelId);
             var request = mapper.MapUpdateRoomStatus(content);
 
             var hotelGrain = _clusterClient.GetGrain<IOutboundAdapterGrain>(hotelId);

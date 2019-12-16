@@ -1,5 +1,6 @@
 ﻿using ServiceExtensions.PmsAdapter.ClientChannel;
 using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
+using System.Threading.Tasks;
 
 namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
 {
@@ -14,7 +15,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
             _loginCacheService = loginCacheService;
         }
 
-        public SessionItem ExternalLogin(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
+        public async Task<SessionItem> ExternalLogin(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
         {
             var isFound = _loginCacheService.TryGetValue(clientFactory, username, password, out ICachedSessionItem cachedSession);
             if (isFound)
@@ -22,7 +23,7 @@ namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
                 return (SessionItem)cachedSession;
             }
 
-            var userSessionDto = _userAuthenticationService.SignIn(clientFactory, username, password);
+            var userSessionDto = await _userAuthenticationService.SignIn(clientFactory, username, password);
             var session = new SessionItem(username, password, userSessionDto);
             if (session.IsAuthorised)
             {
@@ -40,10 +41,10 @@ namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
             _loginCacheService.ClearCache(clientFactory, username);
         }
 
-        public SessionItem ExternalLoginNoCache(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
+        public async Task<SessionItem> ExternalLoginNoCache(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password)
         {
             _loginCacheService.ClearCache(clientFactory, username);
-            return ExternalLogin(clientFactory, username, password);
+            return await ExternalLogin(clientFactory, username, password);
         }
     }
 }

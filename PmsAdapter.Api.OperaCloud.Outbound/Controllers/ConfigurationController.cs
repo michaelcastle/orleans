@@ -12,12 +12,12 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 {
     [Route("api/[controller]/OperaCloud")]
     [ApiController]
-    public class LoginController : ControllerBase
+    public class ConfigurationController : ControllerBase
     {
         private readonly IClusterClient _clusterClient;
         private const string StreamProviderName = "SMSProvider";
 
-        public LoginController(IClusterClient clusterClient)
+        public ConfigurationController(IClusterClient clusterClient)
         {
             _clusterClient = clusterClient;
         }
@@ -52,15 +52,16 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 
             var namespaces = new List<string>
             {
-                await hotel.StreamNamespaceInbound<RoomStatusUpdate, Constants.Outbound.OperaCloud>()
+                await hotel.StreamNamespaceInbound<RoomStatusUpdate, Constants.Outbound.OperaCloud>(),
+                await hotel.StreamNamespaceOutbound<RoomStatusUpdate>()
                 //await hotel.StreamNamespaceInbound<FetchProfileResponse>(nameof(Constants.Outbound.OperaCloud))
                 //await hotel.StreamNamespaceInbound<FetchReservationResponse>(nameof(Constants.Outbound.OperaCloud))
                 //await hotel.StreamNamespaceInbound<ReservationLookupResponse>(nameof(Constants.Outbound.OperaCloud))
             };
 
             var consumerGrain = _clusterClient.GetGrain<IInboundConsumerGrain>(0);
-            var observer = consumerGrain.GetInboundConsumer(configuration, hotelId);
-            var task = hotel.SubscribeToResponses(configuration, StreamProviderName, namespaces, await observer);
+            var observer = await consumerGrain.GetInboundConsumer(configuration, hotelId);
+            var task = hotel.SubscribeToResponses(configuration, StreamProviderName, namespaces, observer);
 
             await task;
             if (!task.IsCompletedSuccessfully)

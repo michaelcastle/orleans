@@ -2,7 +2,7 @@
 
 namespace OutboundAdapter.Interfaces.Consumer
 {
-    public interface ISubmitMessageConsumer : ISubscribeToResponseObserver, IGrainWithIntegerKey
+    public interface ISubmitMessageConsumer : ISubscribeToResponseObserver
     {
     }
 }

@@ -185,7 +185,7 @@ namespace ServiceExtensions.Soap.Core
             {
                 foreach (var messageFilter in messageFilters)
                 {
-                    messageFilter.OnRequestExecuting(requestMessage, httpContext.Request.Path);
+                    messageFilter.OnRequestExecuting(requestMessage, httpContext.Request);
                 }
             }
             catch (Exception ex)

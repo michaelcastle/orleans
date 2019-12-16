@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OutboundAdapter.Grains\OutboundAdapter.Grains.csproj" />
     <ProjectReference Include="..\OutboundAdapter.Interfaces\OutboundAdapter.Interfaces.csproj" />
+    <ProjectReference Include="..\ServiceExtensions.Orleans\ServiceExtensions.Orleans.csproj" />
   </ItemGroup>
 
 </Project>

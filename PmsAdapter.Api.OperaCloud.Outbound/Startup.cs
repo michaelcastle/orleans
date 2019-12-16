@@ -45,7 +45,6 @@ namespace PmsAdapter.Api.OperaCloud.Outbound
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Outbound Api V1");
             });
 
-
             app.UseHttpsRedirection();
             app.UseRouting();
 

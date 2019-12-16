@@ -1,8 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NodaTime;
 using OutboundAdapter.Grains.Opera;
 using OutboundAdapter.Interfaces.Opera;
 using Polly;
+using ServiceExtensions.Orleans;
+using ServiceExtensions.PmsAdapter.PmsProcessor;
+using ServiceExtensions.PmsAdapter.SignIn;
+using ServiceExtensions.PmsAdapter.SignIn.Authentication;
+using ServiceExtensions.PmsAdapter.SignIn.CachedLogin;
 using System;
 using System.Net.Http;
 
@@ -22,7 +28,14 @@ namespace SiloHost.Opera
             .AddPolicyHandler(timeoutPolicy)
             .AddTransientHttpErrorPolicy(p => p.RetryAsync(3));
 
-            services.AddSingleton<IClock>(SystemClock.Instance);
+            services.TryAddSingleton<IPmsProcessorService, PmsProcessorService>();
+            services.AddMemoryCache();
+            services.TryAddSingleton<ILoginCacheService, OptiiLoginCache>();
+            services.TryAddSingleton<ICachedExternalLogin, CachedExternalLogin>();
+            services.TryAddSingleton<ISessionItemAuthenticationService, ClientFactorySignInService>();
+            services.TryAddSingleton<ISecurityAuthenticator, OptiiAuthenticator>();
+
+            services.TryAddSingleton<IClock>(SystemClock.Instance);
             services.AddTransient<IOperaEnvelopeSerializer, OperaEnvelopeSerializer>();
 
             return services;

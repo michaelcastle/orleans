@@ -16,6 +16,8 @@ namespace OutboundAdapter.Grains.V2
         private InboundConfiguration _configuration;
         private readonly IPmsProcessorService _pmsProcessorService;
         private IClientChannelFactory<IPMSInterfaceContractChannel> _clientFactory;
+        private IAsyncObservable<string> _stream;
+        private StreamSubscriptionHandle<string> _subscription;
 
         public SubmitMessageConsumer(IPmsProcessorService pmsProcessorService)
         {
@@ -42,6 +44,13 @@ namespace OutboundAdapter.Grains.V2
             _configuration = configuration;
             _clientFactory = SetClientFactory(_configuration);
             return Task.CompletedTask;
+        }
+
+        public async Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)
+        {
+            var streamProvider = GetStreamProvider(providerToUse);
+            var stream = streamProvider.GetStream<string>(streamId, streamNamespace);
+            _subscription = await stream.SubscribeAsync(OnNextAsync, OnErrorAsync, OnActivateAsync);
         }
 
         private IClientChannelFactory<IPMSInterfaceContractChannel> SetClientFactory(InboundConfiguration configuration)

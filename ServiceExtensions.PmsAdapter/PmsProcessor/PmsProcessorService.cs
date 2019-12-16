@@ -22,8 +22,7 @@ namespace ServiceExtensions.PmsAdapter.PmsProcessor
 
         public async Task<bool> SubmitMessage(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, string username, string password, string messageString)
         {
-
-            var userSession = _cachedLoginService.ExternalLogin(clientFactory, username, password);
+            var userSession = await _cachedLoginService.ExternalLogin(clientFactory, username, password);
             if (userSession == null || !userSession.IsAuthorised || userSession.SessionId == Guid.Empty)
             {
                 _logger.LogError("Failed login to PmsProcessor, check settings or credentials");
@@ -52,7 +51,7 @@ namespace ServiceExtensions.PmsAdapter.PmsProcessor
                 if (interfaceReturn.ReturnType != InterfaceReturn.enReturnType.SessionEnded)
                     return interfaceReturn;
 
-                var userSession = _cachedLoginService.ExternalLoginNoCache(clientFactory, userSessionItem.UserName, password);
+                var userSession = await _cachedLoginService.ExternalLoginNoCache(clientFactory, userSessionItem.UserName, password);
                 if (userSession == null || !userSession.IsAuthorised || userSession.SessionId == Guid.Empty)
                 {
                     return new InterfaceReturn

@@ -6,7 +6,6 @@ using OutboundAdapter.Interfaces.Models;
 using OutboundAdapter.Interfaces.Opera;
 using OutboundAdapter.Interfaces.Opera.Inbound;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +22,8 @@ namespace OutboundAdapter.Grains.Opera
         private readonly IClusterClient _clusterClient;
         private InboundConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
+        private IAsyncObservable<string> consumer;
+        private StreamSubscriptionHandle<string> consumerHandle;
 
         public RoomStatusUpdateConsumer(IClusterClient clusterClient, IHttpClientFactory httpClientFactory)
         {
@@ -83,7 +84,7 @@ namespace OutboundAdapter.Grains.Opera
             return Task.CompletedTask;
         }
 
-        async Task IAsyncObserver<string>.OnNextAsync(string content, StreamSequenceToken token)
+        public async Task OnNextAsync(string content, StreamSequenceToken token)
         {
             if (_configuration == null || string.IsNullOrEmpty(_configuration.Url))
             {
@@ -119,9 +120,16 @@ namespace OutboundAdapter.Grains.Opera
             throw new NotImplementedException();
         }
 
-        Task IAsyncObserver<string>.OnErrorAsync(Exception ex)
+        public Task OnErrorAsync(Exception ex)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)
+        {
+            var streamProvider = GetStreamProvider(providerToUse);
+            consumer = streamProvider.GetStream<string>(streamId, streamNamespace);
+            consumerHandle = await consumer.SubscribeAsync(OnNextAsync, OnErrorAsync, OnActivateAsync);
         }
     }
 }

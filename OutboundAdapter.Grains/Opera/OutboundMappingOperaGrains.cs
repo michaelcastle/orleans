@@ -10,7 +10,7 @@ using OutboundAdapter.Interfaces.Opera;
 namespace OutboundAdapter.Grains.Opera
 {
     [StatelessWorker]
-    public class OutboundMappingOperaGrains : Grain, IOutboundMappingGrains
+    public class OutboundMappingOperaGrains : Grain, IOutboundMappingOperaGrains
     {
         private readonly IOperaEnvelopeSerializer _operaRequestSerializer;
 
@@ -19,22 +19,22 @@ namespace OutboundAdapter.Grains.Opera
             _operaRequestSerializer = operaRequestSerializer;
         }
 
-        Task<string> IOutboundMappingGrains.MapFetchProfile(FetchProfile request)
+        Task<string> IOutboundMappingOperaGrains.MapFetchProfile(FetchProfile request)
         {
             throw new NotImplementedException();
         }
 
-        Task<string> IOutboundMappingGrains.MapFetchReservation(FetchReservation request)
+        Task<string> IOutboundMappingOperaGrains.MapFetchReservation(FetchReservation request)
         {
             throw new NotImplementedException();
         }
 
-        Task<string> IOutboundMappingGrains.MapReservationLookup(ReservationLookup request)
+        Task<string> IOutboundMappingOperaGrains.MapReservationLookup(ReservationLookup request)
         {
             throw new NotImplementedException();
         }
 
-        async Task<string> IOutboundMappingGrains.MapUpdateRoomStatus(UpdateRoomStatusRequestDto request)
+        async Task<string> IOutboundMappingOperaGrains.MapUpdateRoomStatus(UpdateRoomStatusRequestDto request)
         {
             return await Task.Run(() => {
                 var envelope = new UpdateRoomStatusRequestEnvelopeDto

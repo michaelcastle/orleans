@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Security.Authentication;
 using System.ServiceModel.Channels;
 using Microsoft.AspNetCore.Http;
@@ -26,7 +27,7 @@ namespace OutboundAdapter.Grains.Opera
             _oasisSecurityService = oasisSecurityService;
         }
 
-        public void OnRequestExecuting(Message message, PathString path)
+        public void OnRequestExecuting(Message message, HttpRequest request)
         {
             OasisUsernameToken oasisUsernameToken;
 
@@ -48,7 +49,7 @@ namespace OutboundAdapter.Grains.Opera
 
             try
             {
-                if (!ValidateOasisUsernameToken(oasisUsernameToken, path))
+                if (!ValidateOasisUsernameToken(oasisUsernameToken, request.Query))
                 {
                     throw new InvalidCredentialException($"{AuthInvalidErrorMessage}. Username: {oasisUsernameToken.Username}");
                 }
@@ -69,16 +70,14 @@ namespace OutboundAdapter.Grains.Opera
             return (DateTimeOffset.Now > oasisSecurity.Timestamp.Created && DateTimeOffset.Now < oasisSecurity.Timestamp.Expires);
         }
 
-        private bool ValidateOasisUsernameToken(OasisUsernameToken oasisUsernameToken, PathString path)
+        private bool ValidateOasisUsernameToken(OasisUsernameToken oasisUsernameToken, IQueryCollection query)
         {
             if (string.IsNullOrEmpty(oasisUsernameToken.Username) && !string.IsNullOrEmpty(oasisUsernameToken.Password))
             {
                 return false;
             }
 
-            var queryString = new Uri(path.Value).Query;
-            var queryDictionary = System.Web.HttpUtility.ParseQueryString(queryString);
-            var hotelId = queryDictionary.Get("hotelid");
+            var hotelId = query["hotelid"].First();
             if (string.IsNullOrEmpty(hotelId))
             {
                 return false;

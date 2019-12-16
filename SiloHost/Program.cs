@@ -51,7 +51,7 @@ namespace SiloHost
                             {
                                 options.OptimizeForImmutableData = false;
                                 options.FireAndForgetDelivery = false;
-                                options.PubSubType = Orleans.Streams.StreamPubSubType.ImplicitOnly;
+                                //options.PubSubType = Orleans.Streams.StreamPubSubType.ImplicitOnly;
                             })
                 .ConfigureApplicationParts(parts =>
                 {

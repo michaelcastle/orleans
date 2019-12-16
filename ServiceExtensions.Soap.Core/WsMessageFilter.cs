@@ -27,7 +27,7 @@ namespace ServiceExtensions.Soap.Core
             _authInvalidErrorMessage = authInvalidErrorMessage;
         }
 
-        public void OnRequestExecuting(Message message, PathString path)
+        public void OnRequestExecuting(Message message, HttpRequest request)
         {
             WsUsernameToken wsUsernameToken;
             try

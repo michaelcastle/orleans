@@ -61,16 +61,24 @@ namespace OutboundAdapter.Grains
         // TODO: Change this to streaming and subscribing multiple receivers to input
         async Task IHotelPmsGrain.SubscribeToResponses(InboundConfiguration configuration, string provider, IList<string> streamNamespaces, ISubscribeToResponseObserver observer)
         {
+            var config = observer.SetConfiguration(configuration);
+
             _hotelConfiguration.State.InboundConfiguration = configuration;
 
-            IStreamProvider streamProvider = base.GetStreamProvider(provider);
+            //IStreamProvider streamProvider = base.GetStreamProvider(provider);
+            var tasks = new List<Task>();
+
+            await config;
+            
             foreach (var streamNamespace in streamNamespaces)
             {
-                var stream = streamProvider.GetStream<string>(this.GetPrimaryKey(), streamNamespace);
-                _consumers.Add(stream);
-                await observer.SetConfiguration(configuration);
-                consumerHandles.Add(await stream.SubscribeAsync(observer));
+                //var stream = streamProvider.GetStream<string>(this.GetPrimaryKey(), streamNamespace);
+                //_consumers.Add(stream);
+                tasks.Add(observer.BecomeConsumer(this.GetPrimaryKey(), streamNamespace, provider));
+                //consumerHandles.Add(await stream.SubscribeAsync(observer));
             }
+
+            await Task.WhenAll(tasks);
 
             await _hotelConfiguration.WriteStateAsync();
         }
