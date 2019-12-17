@@ -7,6 +7,7 @@ using OutboundAdapter.Interfaces.Consumer;
 using OutboundAdapter.Interfaces.Models;
 using OutboundAdapter.Interfaces.Opera;
 using OutboundAdapter.Interfaces.Opera.Inbound;
+using OutboundAdapter.Interfaces.Opera.Models;
 
 namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 {
@@ -22,13 +23,13 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
             _clusterClient = clusterClient;
         }
 
-        [HttpPost("Publish/{hotelId}")]
-        public async Task<IActionResult> Publish(int hotelId, [FromBody]OutboundConfiguration configuration)
+        [HttpPost("Consume/{hotelId}")]
+        public async Task<IActionResult> Consume(int hotelId, [FromBody]OutboundConfiguration configuration)
         {
             configuration.PmsType = nameof(Constants.Outbound.OperaCloud);
 
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
-            var task = hotel.SaveOutboundConfigurationAsync(configuration);
+            var task = hotel.SaveConsumerConfigurationAsync(configuration);
             await task;
             if (!task.IsCompletedSuccessfully)
             {
@@ -52,7 +53,11 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 
             var namespaces = new List<string>
             {
-                await hotel.StreamNamespaceInbound<RoomStatusUpdate, Constants.Outbound.OperaCloud>(),
+                await hotel.StreamNamespaceInbound<RoomStatusUpdateBERequestDto, Constants.Outbound.OperaCloud>(),
+                await hotel.StreamNamespaceInbound<GuestStatusNotificationExtRequestDto, Constants.Outbound.OperaCloud>(),
+                await hotel.StreamNamespaceInbound<QueueRoomBERequestDto, Constants.Outbound.OperaCloud>(),
+                await hotel.StreamNamespaceInbound<NewProfileRequestDto, Constants.Outbound.OperaCloud>(),
+                await hotel.StreamNamespaceInbound<UpdateProfileRequestDto, Constants.Outbound.OperaCloud>(),
                 await hotel.StreamNamespaceOutbound<UpdateRoomStatusResponse>()
                 //await hotel.StreamNamespaceInbound<FetchProfileResponse>(nameof(Constants.Outbound.OperaCloud))
                 //await hotel.StreamNamespaceInbound<FetchReservationResponse>(nameof(Constants.Outbound.OperaCloud))

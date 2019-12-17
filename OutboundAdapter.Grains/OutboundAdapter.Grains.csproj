@@ -17,7 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LinkController.OperaCloud\LinkController.OperaCloud.Interfaces.csproj" />
     <ProjectReference Include="..\OutboundAdapter.Interfaces\OutboundAdapter.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="V2Generic\" />
   </ItemGroup>
 
 </Project>

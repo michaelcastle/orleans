@@ -102,7 +102,7 @@ namespace OrleansClient
                 var hotel = client.GetGrain<IHotelPmsGrain>(hotelId);
                 if (!await hotel.IsOutboundConnected())
                 {
-                    await hotel.SaveOutboundConfigurationAsync(new OutboundConfiguration
+                    await hotel.SaveConsumerConfigurationAsync(new OutboundConfiguration
                     {
                         PmsType = nameof(Constants.Outbound.OperaCloud),
                         Url = "https://ove-osb.microsdc.us:9015"

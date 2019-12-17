@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
+using LinkController.OperaCloud.Interfaces.Models;
+using LinkController.OperaCloud.Interfaces.Outbound;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
-using OutboundAdapter.Interfaces.Opera;
-using OutboundAdapter.Interfaces.Opera.Models;
 
 namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 {

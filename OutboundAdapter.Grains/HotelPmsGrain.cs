@@ -3,7 +3,6 @@ using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
 using System.Threading.Tasks;
 using Orleans.Runtime;
-using static OutboundAdapter.Interfaces.Opera.Constants;
 using System.Collections.Generic;
 
 namespace OutboundAdapter.Grains
@@ -49,7 +48,7 @@ namespace OutboundAdapter.Grains
             await _hotelConfiguration.WriteStateAsync();
         }
 
-        async Task IHotelPmsGrain.SaveOutboundConfigurationAsync(OutboundConfiguration configuration)
+        async Task IHotelPmsGrain.SaveConsumerConfigurationAsync(OutboundConfiguration configuration)
         {
             _hotelConfiguration.State.OutboundConfiguration = configuration;
             await _hotelConfiguration.WriteStateAsync();
@@ -83,12 +82,12 @@ namespace OutboundAdapter.Grains
 
         public Task<string> StreamNamespaceOutbound<T>()
         {
-            return Task.FromResult($"{nameof(Outbound)}{typeof(T).Name}{_hotelConfiguration.State.OutboundConfiguration.PmsType}");
+            return Task.FromResult($"Outbound{ typeof(T).Name}{_hotelConfiguration.State.OutboundConfiguration.PmsType}");
         }
 
         public Task<string> StreamNamespaceInbound<T, P>()
         {
-            return Task.FromResult($"{nameof(Inbound)}{typeof(T).Name}{typeof(P).Name}");
+            return Task.FromResult($"Inbound{typeof(T).Name}{typeof(P).Name}");
         }
 
         public async Task Unsubscribe(InboundConfiguration configuration)

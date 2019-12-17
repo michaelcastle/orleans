@@ -6,6 +6,7 @@ using Orleans.Streams;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
 using OutboundAdapter.Interfaces.Opera;
+using OutboundAdapter.Interfaces.Opera.Models;
 using ServiceExtensions.PmsAdapter.SubmitMessage;
 
 namespace ServiceExtensions.Orleans
@@ -25,22 +26,39 @@ namespace ServiceExtensions.Orleans
 
         public async Task<SubmitMessageResponse> SubmitRoomStatusUpdateBE(SubmitMessage submit)
         {
-            _logger.LogDebug("SubmitMessageDirect: {submitMessage}", submit.Message);
+            return await SubmitToSubscribers<RoomStatusUpdateBERequestDto>(submit);
+        }
+
+        public async Task<SubmitMessageResponse> SubmitGuestStatusNotificationExt(SubmitMessage submit)
+        {
+            return await SubmitToSubscribers<GuestStatusNotificationExtRequestDto>(submit);
+        }
+
+        public async Task<SubmitMessageResponse> SubmitQueueRoomBE(SubmitMessage submit)
+        {
+            return await SubmitToSubscribers<QueueRoomBERequestDto>(submit);
+        }
+
+        public async Task<SubmitMessageResponse> SubmitNewProfile(SubmitMessage submit)
+        {
+            return await SubmitToSubscribers<NewProfileRequestDto>(submit);
+        }
+
+        public async Task<SubmitMessageResponse> SubmitUpdateProfile(SubmitMessage submit)
+        {
+            return await SubmitToSubscribers<UpdateProfileRequestDto>(submit);
+        }
+
+        private async Task<SubmitMessageResponse> SubmitToSubscribers<T>(SubmitMessage submit)
+        {
+            _logger.LogDebug("SubmitToSubscribers: {submitMessage}", submit.Message);
 
             try
             {
                 int.TryParse(submit.HotelId, out int hotelIdInt);
                 var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelIdInt);
-                if (!await hotel.IsInboundConnected())
-                {
-                    return new SubmitMessageResponse
-                    {
-                        IsSuccessful = false,
-                        FailReason = new Exception("Hotel is not connected to the PMS. Please Connect first.")
-                    };
-                }
 
-                var streamNamespace = await hotel.StreamNamespaceInbound<RoomStatusUpdate, Constants.Outbound.OperaCloud>();
+                var streamNamespace = await hotel.StreamNamespaceInbound<T, Constants.Outbound.OperaCloud>();
                 var stream = _streamProvider.GetStream<string>(hotel.GetPrimaryKey(), streamNamespace);
 
                 var streamed = stream.OnNextAsync(submit.Message);
@@ -69,26 +87,6 @@ namespace ServiceExtensions.Orleans
                     FailReason = ex
                 };
             }
-        }
-
-        public Task<SubmitMessageResponse> SubmitGuestStatusNotificationExt(SubmitMessage submit)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<SubmitMessageResponse> SubmitQueueRoomBE(SubmitMessage submit)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<SubmitMessageResponse> SubmitNewProfile(SubmitMessage submit)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<SubmitMessageResponse> SubmitUpdateProfile(SubmitMessage submit)
-        {
-            throw new NotImplementedException();
         }
     }
 }

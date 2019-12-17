@@ -29,9 +29,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api", "Api", "{FAC8D86C-792
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OperaCloud", "OperaCloud", "{3623531F-D16D-432A-8904-C3EFDB01BA01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PmsAdapter.Api.OperaCloud.Outbound", "PmsAdapter.Api.OperaCloud.Outbound\PmsAdapter.Api.OperaCloud.Outbound.csproj", "{72593E2A-8D2C-4AE9-934E-0F5E5F4BB502}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PmsAdapter.Api.OperaCloud.Outbound", "PmsAdapter.Api.OperaCloud.Outbound\PmsAdapter.Api.OperaCloud.Outbound.csproj", "{72593E2A-8D2C-4AE9-934E-0F5E5F4BB502}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceExtensions.Orleans", "ServiceExtensions.Orleans\ServiceExtensions.Orleans.csproj", "{8FCF0E40-ECDC-4BD3-9520-B39E63B4082B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceExtensions.Orleans", "ServiceExtensions.Orleans\ServiceExtensions.Orleans.csproj", "{8FCF0E40-ECDC-4BD3-9520-B39E63B4082B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LinkController", "LinkController", "{BE87332C-5C60-48E3-986E-65D5EF82F9D2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinkController.OperaCloud", "LinkController.OperaCloud\LinkController.OperaCloud.csproj", "{76FE72F5-9035-4EF4-B3D3-8FF663528ACD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinkController.OperaCloud.Interfaces", "LinkController.OperaCloud.Interfaces\LinkController.OperaCloud.Interfaces.csproj", "{D40CE96A-021B-4535-96DB-F19EEABAE204}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,6 +93,14 @@ Global
 		{8FCF0E40-ECDC-4BD3-9520-B39E63B4082B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FCF0E40-ECDC-4BD3-9520-B39E63B4082B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FCF0E40-ECDC-4BD3-9520-B39E63B4082B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76FE72F5-9035-4EF4-B3D3-8FF663528ACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76FE72F5-9035-4EF4-B3D3-8FF663528ACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76FE72F5-9035-4EF4-B3D3-8FF663528ACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76FE72F5-9035-4EF4-B3D3-8FF663528ACD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D40CE96A-021B-4535-96DB-F19EEABAE204}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D40CE96A-021B-4535-96DB-F19EEABAE204}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D40CE96A-021B-4535-96DB-F19EEABAE204}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D40CE96A-021B-4535-96DB-F19EEABAE204}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -101,6 +115,8 @@ Global
 		{3623531F-D16D-432A-8904-C3EFDB01BA01} = {FAC8D86C-7920-45CB-AAAA-6B2AF1CF0FE4}
 		{72593E2A-8D2C-4AE9-934E-0F5E5F4BB502} = {3623531F-D16D-432A-8904-C3EFDB01BA01}
 		{8FCF0E40-ECDC-4BD3-9520-B39E63B4082B} = {DBAEBBAA-74F0-43C5-B745-FD992F4CCCCF}
+		{76FE72F5-9035-4EF4-B3D3-8FF663528ACD} = {BE87332C-5C60-48E3-986E-65D5EF82F9D2}
+		{D40CE96A-021B-4535-96DB-F19EEABAE204} = {BE87332C-5C60-48E3-986E-65D5EF82F9D2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0C16B343-7BEC-4CB1-A391-A83F33F1F46E}
