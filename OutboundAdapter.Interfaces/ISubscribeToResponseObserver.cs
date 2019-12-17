@@ -10,5 +10,6 @@ namespace OutboundAdapter.Interfaces
     {
         Task SetConfiguration(InboundConfiguration configuration);
         Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse);
+        Task StopConsuming();
     }
 }

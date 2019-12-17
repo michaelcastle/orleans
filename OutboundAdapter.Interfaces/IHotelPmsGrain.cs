@@ -12,8 +12,9 @@ namespace OutboundAdapter.Interfaces
         Task<bool> IsInboundConnected();
         Task<InboundConfiguration> GetInboundConfiguration();
         Task<OutboundConfiguration> GetOutboundConfiguration();
-        Task SubscribeToResponses(InboundConfiguration configuration, string provider, IList<string> streamNamespaces, ISubscribeToResponseObserver observer);
+        Task SubscribeToInbound(InboundConfiguration configuration, string provider, IList<string> streamNamespaces, ISubscribeToResponseObserver observer);
         Task IncrementAsync();
         Task SaveOutboundConfigurationAsync(OutboundConfiguration configuration);
+        Task Unsubscribe(InboundConfiguration configuration);
     }
 }

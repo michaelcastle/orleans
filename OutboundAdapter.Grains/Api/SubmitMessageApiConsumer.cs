@@ -15,6 +15,11 @@ namespace OutboundAdapter.Grains.Api
             throw new NotImplementedException();
         }
 
+        public Task StopConsuming()
+        {
+            throw new NotImplementedException();
+        }
+
         Task IAsyncObserver<string>.OnCompletedAsync()
         {
             throw new NotImplementedException();

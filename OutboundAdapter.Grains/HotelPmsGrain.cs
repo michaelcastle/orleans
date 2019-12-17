@@ -4,7 +4,6 @@ using OutboundAdapter.Interfaces.Models;
 using System.Threading.Tasks;
 using Orleans.Runtime;
 using static OutboundAdapter.Interfaces.Opera.Constants;
-using Orleans.Streams;
 using System.Collections.Generic;
 
 namespace OutboundAdapter.Grains
@@ -12,9 +11,7 @@ namespace OutboundAdapter.Grains
     public class HotelPmsGrain : Grain, IHotelPmsGrain
     {
         private readonly IPersistentState<HotelConfiguration> _hotelConfiguration;
-
-        private readonly List<IAsyncStream<string>> _consumers = new List<IAsyncStream<string>>();
-        private readonly List<StreamSubscriptionHandle<string>> consumerHandles = new List<StreamSubscriptionHandle<string>>();
+        private readonly Dictionary<string, ISubscribeToResponseObserver> _inboundSubscribers = new Dictionary<string, ISubscribeToResponseObserver>();
 
         Task<bool> IHotelPmsGrain.IsOutboundConnected()
         {
@@ -58,24 +55,25 @@ namespace OutboundAdapter.Grains
             await _hotelConfiguration.WriteStateAsync();
         }
 
-        // TODO: Change this to streaming and subscribing multiple receivers to input
-        async Task IHotelPmsGrain.SubscribeToResponses(InboundConfiguration configuration, string provider, IList<string> streamNamespaces, ISubscribeToResponseObserver observer)
+        async Task IHotelPmsGrain.SubscribeToInbound(InboundConfiguration configuration, string provider, IList<string> streamNamespaces, ISubscribeToResponseObserver observer)
         {
             var config = observer.SetConfiguration(configuration);
 
             _hotelConfiguration.State.InboundConfiguration = configuration;
 
-            //IStreamProvider streamProvider = base.GetStreamProvider(provider);
             var tasks = new List<Task>();
 
             await config;
             
             foreach (var streamNamespace in streamNamespaces)
             {
-                //var stream = streamProvider.GetStream<string>(this.GetPrimaryKey(), streamNamespace);
-                //_consumers.Add(stream);
                 tasks.Add(observer.BecomeConsumer(this.GetPrimaryKey(), streamNamespace, provider));
-                //consumerHandles.Add(await stream.SubscribeAsync(observer));
+                if (_inboundSubscribers.ContainsKey(configuration.Key()))
+                {
+                    await Unsubscribe(configuration);
+                }
+
+                _inboundSubscribers.Add(configuration.Key(), observer);
             }
 
             await Task.WhenAll(tasks);
@@ -91,6 +89,17 @@ namespace OutboundAdapter.Grains
         public Task<string> StreamNamespaceInbound<T, P>()
         {
             return Task.FromResult($"{nameof(Inbound)}{typeof(T).Name}{typeof(P).Name}");
+        }
+
+        public async Task Unsubscribe(InboundConfiguration configuration)
+        {
+            _inboundSubscribers.TryGetValue(configuration.Key(), out var observer);
+            if (observer == null)
+            {
+                return;
+            }
+            await observer.StopConsuming();
+            _inboundSubscribers.Remove(configuration.Key());
         }
     }
 }

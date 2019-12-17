@@ -36,4 +36,12 @@ namespace OutboundAdapter.Interfaces.Models
         public string EncryptedUsername { get; set; }
         public string EncryptedPassword { get; set; }
     }
+
+    public static class InboundConfigurationExtensions
+    {
+        public static string Key(this InboundConfiguration inboundConfiguration)
+        {
+            return $"{inboundConfiguration.InboundType}{inboundConfiguration.Url}";
+        }
+    }
 }

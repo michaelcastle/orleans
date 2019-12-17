@@ -73,7 +73,7 @@ namespace OutboundAdapter.Grains.Opera
         private async Task<string> SubmitResponse(HttpResponseMessage response)
         {
             var resultStream = response.Content.ReadAsStringAsync();
-            var streamNamespace = await _hotel.StreamNamespaceOutbound<RoomStatusUpdate>();
+            var streamNamespace = await _hotel.StreamNamespaceOutbound<UpdateRoomStatusResponse>();
             var stream = _streamProvider.GetStream<string>(this.GetPrimaryKey(), streamNamespace);
 
             var streamed = stream.OnNextAsync(await resultStream);

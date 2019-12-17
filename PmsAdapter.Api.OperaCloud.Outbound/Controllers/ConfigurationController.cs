@@ -53,7 +53,7 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
             var namespaces = new List<string>
             {
                 await hotel.StreamNamespaceInbound<RoomStatusUpdate, Constants.Outbound.OperaCloud>(),
-                await hotel.StreamNamespaceOutbound<RoomStatusUpdate>()
+                await hotel.StreamNamespaceOutbound<UpdateRoomStatusResponse>()
                 //await hotel.StreamNamespaceInbound<FetchProfileResponse>(nameof(Constants.Outbound.OperaCloud))
                 //await hotel.StreamNamespaceInbound<FetchReservationResponse>(nameof(Constants.Outbound.OperaCloud))
                 //await hotel.StreamNamespaceInbound<ReservationLookupResponse>(nameof(Constants.Outbound.OperaCloud))
@@ -61,13 +61,23 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 
             var consumerGrain = _clusterClient.GetGrain<IInboundConsumerGrain>(0);
             var observer = await consumerGrain.GetInboundConsumer(configuration, hotelId);
-            var task = hotel.SubscribeToResponses(configuration, StreamProviderName, namespaces, observer);
+            var task = hotel.SubscribeToInbound(configuration, StreamProviderName, namespaces, observer);
 
             await task;
             if (!task.IsCompletedSuccessfully)
             {
                 return StatusCode(500);
             }
+
+            return Ok();
+        }
+
+        [HttpPost("Unsubscribe/{hotelId}")]
+        public async Task<IActionResult> Unsubscribe(int hotelId, [FromBody]InboundConfiguration configuration)
+        {
+            var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
+
+            await hotel.Unsubscribe(configuration);
 
             return Ok();
         }

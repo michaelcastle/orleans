@@ -131,5 +131,14 @@ namespace OutboundAdapter.Grains.Opera
             consumer = streamProvider.GetStream<string>(streamId, streamNamespace);
             consumerHandle = await consumer.SubscribeAsync(OnNextAsync, OnErrorAsync, OnActivateAsync);
         }
+
+        public async Task StopConsuming()
+        {
+            if (consumerHandle != null)
+            {
+                await consumerHandle.UnsubscribeAsync();
+                consumerHandle = null;
+            }
+        }
     }
 }
