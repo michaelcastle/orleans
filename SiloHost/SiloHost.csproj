@@ -14,9 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LinkController.OperaCloud.Interfaces\LinkController.OperaCloud.Interfaces.csproj" />
+    <ProjectReference Include="..\LinkController.OperaCloud\LinkController.OperaCloud.Grains.csproj" />
     <ProjectReference Include="..\OutboundAdapter.Grains\OutboundAdapter.Grains.csproj" />
     <ProjectReference Include="..\OutboundAdapter.Interfaces\OutboundAdapter.Interfaces.csproj" />
-    <ProjectReference Include="..\ServiceExtensions.Orleans\ServiceExtensions.Orleans.csproj" />
   </ItemGroup>
 
 </Project>

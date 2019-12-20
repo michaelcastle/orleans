@@ -10,7 +10,7 @@ namespace LinkController.OperaCloud.Interfaces.Models
 
         [XmlElement("ReservationID")]
         public string ReservationId { get; set; }
-        
+
         [XmlArray("ProfileIDs")]
         [XmlArrayItem("UniqueID", Namespace = "http://htng.org/PWS/2008B/SingleGuestItinerary/Common/Types")]
         public List<UniqueIdDto> ProfileIds { get; set; }

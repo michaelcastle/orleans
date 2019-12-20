@@ -6,13 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.Orleans.Client" Version="3.0.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LinkController.OperaCloud.Interfaces\LinkController.OperaCloud.Interfaces.csproj" />
+    <ProjectReference Include="..\LinkController.OperaCloud\LinkController.OperaCloud.Grains.csproj" />
     <ProjectReference Include="..\OutboundAdapter.Grains\OutboundAdapter.Grains.csproj" />
     <ProjectReference Include="..\OutboundAdapter.Interfaces\OutboundAdapter.Interfaces.csproj" />
-    <ProjectReference Include="..\ServiceExtensions.Orleans\ServiceExtensions.Orleans.csproj" />
   </ItemGroup>
 
 </Project>

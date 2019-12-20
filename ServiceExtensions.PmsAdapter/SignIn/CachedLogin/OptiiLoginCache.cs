@@ -5,7 +5,7 @@ using System;
 
 namespace ServiceExtensions.PmsAdapter.SignIn.CachedLogin
 {
-    public class OptiiLoginCache : ILoginCacheService 
+    public class OptiiLoginCache : ILoginCacheService
     {
         private readonly IMemoryCache _memoryCache;
 

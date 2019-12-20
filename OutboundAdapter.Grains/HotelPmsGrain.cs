@@ -1,9 +1,9 @@
 ﻿using Orleans;
+using Orleans.Runtime;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
-using System.Threading.Tasks;
-using Orleans.Runtime;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OutboundAdapter.Grains
 {
@@ -32,20 +32,9 @@ namespace OutboundAdapter.Grains
             await base.OnActivateAsync();
         }
 
-        Task<InboundConfiguration> IHotelPmsGrain.GetInboundConfiguration()
-        {
-            return Task.FromResult(_hotelConfiguration.State.InboundConfiguration);
-        }
-
         Task<OutboundConfiguration> IHotelPmsGrain.GetOutboundConfiguration()
         {
             return Task.FromResult(_hotelConfiguration.State.OutboundConfiguration);
-        }
-
-        async Task IHotelPmsGrain.IncrementAsync()
-        {
-            _hotelConfiguration.State.TotalNumber++;
-            await _hotelConfiguration.WriteStateAsync();
         }
 
         async Task IHotelPmsGrain.SaveConsumerConfigurationAsync(OutboundConfiguration configuration)
@@ -58,12 +47,10 @@ namespace OutboundAdapter.Grains
         {
             var config = observer.SetConfiguration(configuration);
 
-            _hotelConfiguration.State.InboundConfiguration = configuration;
-
             var tasks = new List<Task>();
 
             await config;
-            
+
             foreach (var streamNamespace in streamNamespaces)
             {
                 tasks.Add(observer.BecomeConsumer(this.GetPrimaryKey(), streamNamespace, provider));
@@ -78,16 +65,6 @@ namespace OutboundAdapter.Grains
             await Task.WhenAll(tasks);
 
             await _hotelConfiguration.WriteStateAsync();
-        }
-
-        public Task<string> StreamNamespaceOutbound<T>()
-        {
-            return Task.FromResult($"Outbound{ typeof(T).Name}{_hotelConfiguration.State.OutboundConfiguration.PmsType}");
-        }
-
-        public Task<string> StreamNamespaceInbound<T, P>()
-        {
-            return Task.FromResult($"Inbound{typeof(T).Name}{typeof(P).Name}");
         }
 
         public async Task Unsubscribe(InboundConfiguration configuration)

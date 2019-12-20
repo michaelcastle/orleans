@@ -35,7 +35,8 @@ namespace ServiceExtensions.PmsAdapter.ServiceBus
         {
             bus.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(configure =>
             {
-                var host = configure.Host(new Uri(submitMessageSettings.QueueSettings.RabbitMqSettings.Host ?? "rabbitmq://localhost"), hostConfigurator => {
+                var host = configure.Host(new Uri(submitMessageSettings.QueueSettings.RabbitMqSettings.Host ?? "rabbitmq://localhost"), hostConfigurator =>
+                {
                     hostConfigurator.Username(submitMessageSettings.QueueSettings.RabbitMqSettings.Username);
                     hostConfigurator.Password(submitMessageSettings.QueueSettings.RabbitMqSettings.Password);
                 });

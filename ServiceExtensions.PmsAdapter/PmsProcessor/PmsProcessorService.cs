@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 using ServiceExtensions.PmsAdapter.SignIn;
 using ServiceExtensions.PmsAdapter.SignIn.CachedLogin;
-using ServiceExtensions.PmsAdapter.ClientChannel;
 using System;
 using System.ServiceModel;
 using System.Threading.Tasks;
-using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 
 namespace ServiceExtensions.PmsAdapter.PmsProcessor
 {
@@ -43,7 +43,7 @@ namespace ServiceExtensions.PmsAdapter.PmsProcessor
         private async Task<InterfaceReturn> ProcessSubmitMessage(IClientChannelFactory<IPMSInterfaceContractChannel> clientFactory, SessionItem userSessionItem, string password, string messageString)
         {
             var client = clientFactory.CreateChannel();
-            
+
             try
             {
                 client.Open();

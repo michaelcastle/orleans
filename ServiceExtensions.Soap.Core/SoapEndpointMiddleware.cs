@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ServiceExtensions.Soap.Core.Response;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,10 +11,6 @@ using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using ServiceExtensions.Soap.Core.Response;
 
 namespace ServiceExtensions.Soap.Core
 {
@@ -219,11 +219,8 @@ namespace ServiceExtensions.Soap.Core
                     //Create an instance of the service class
                     var serviceInstance = serviceProvider.GetService(_service.ServiceType);
 
-                    var headerProperty = _service.ServiceType.GetProperty("MessageHeaders");
-                    if (headerProperty != null && headerProperty.PropertyType == requestMessage.Headers.GetType())
-                    {
-                        headerProperty.SetValue(serviceInstance, requestMessage.Headers);
-                    }
+                    SetServiceProperty("MessageHeaders", requestMessage.Headers, serviceInstance);
+                    SetServiceProperty("Query", httpContext.Request.Query, serviceInstance);
 
                     // Get operation arguments from message
                     var arguments = GetRequestArguments(requestMessage, reader, operation);
@@ -311,6 +308,15 @@ namespace ServiceExtensions.Soap.Core
             }
 
             return responseMessage;
+        }
+
+        private void SetServiceProperty<T>(string propertyName, T value, object serviceInstance)
+        {
+            var property = _service.ServiceType.GetProperty(propertyName);
+            if (property != null && property.PropertyType == value.GetType())
+            {
+                property.SetValue(serviceInstance, value);
+            }
         }
 
         private Message WriteResponseMessage(HttpContext httpContext, IServiceProvider serviceProvider, Message requestMessage, IMessageInspector messageInspector, object correlationObject, OperationDescription operation, object[] arguments, object responseObject)

@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OutboundAdapter.Interfaces\OutboundAdapter.Interfaces.csproj" />
     <ProjectReference Include="..\ServiceExtensions.PmsAdapter\ServiceExtensions.PmsAdapter.csproj" />
   </ItemGroup>
 

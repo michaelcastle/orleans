@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using LinkController.OperaCloud.Interfaces.Models;
+﻿using LinkController.OperaCloud.Interfaces.Models;
 using LinkController.OperaCloud.Interfaces.Outbound;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
+using System.Threading.Tasks;
 
 namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 {
@@ -29,7 +29,7 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
                 return BadRequest("Hotel is not connected to the PMS. Please Connect first.");
             }
 
-            var mapper = _clusterClient.GetGrain<IOutboundMappingOperaGrains>(hotelId);
+            var mapper = _clusterClient.GetGrain<IOutboundMappingOperaCloudGrains>(hotelId);
             var request = mapper.MapUpdateRoomStatus(content);
 
             var hotelGrain = _clusterClient.GetGrain<IOutboundAdapterGrain>(hotelId);

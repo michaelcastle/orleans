@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PmsAdapter.Api.Controllers.Opera;
+using PmsAdapter.Api.OperaCloud.Inbound.Controllers;
 using ServiceExtensions.Soap.Core;
 using System.ServiceModel;
 
-namespace PmsAdapter.Api
+namespace PmsAdapter.Api.OperaCloud.Inbound
 {
     public class Startup
     {
@@ -23,7 +23,8 @@ namespace PmsAdapter.Api
         {
             services.AddOperaCloudLinkController();
 
-            services.AddMvc(c => {
+            services.AddMvc(c =>
+            {
                 c.EnableEndpointRouting = false;
             });
         }

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using ServiceExtensions.PmsAdapter.ClientChannel;
 using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 using ServiceExtensions.PmsAdapter.PmsProcessor;
+using System;
+using System.Threading.Tasks;
 
 namespace ServiceExtensions.PmsAdapter.SubmitMessage.Direct
 {

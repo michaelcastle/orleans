@@ -1,21 +1,22 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using LinkController.OperaCloud.Interfaces.OrleansClient;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Orleans;
-using OutboundAdapter.Grains.Opera;
-using PmsAdapter.Api.Controllers.Opera;
-using ServiceExtensions.Orleans;
+using OutboundAdapter.Interfaces.StreamHelpers;
+using PmsAdapter.Api.OperaCloud.Inbound.Controllers;
+using PmsAdapter.Api.OperaCloud.Inbound.Soap;
 using ServiceExtensions.PmsAdapter.PmsProcessor;
 using ServiceExtensions.PmsAdapter.SignIn.CachedLogin;
+using ServiceExtensions.PmsAdapter.SignIn.V2;
 using ServiceExtensions.Soap.Core;
 using ServiceExtensions.Soap.Core.Oasis;
 using ServiceExtensions.Soap.Core.Response;
 using ServiceExtensions.Soap.Oasis;
-using System.ServiceModel;
 
-namespace PmsAdapter.Api
+namespace PmsAdapter.Api.OperaCloud.Inbound
 {
     public static class LinkControllerExtensions
     {
@@ -28,7 +29,7 @@ namespace PmsAdapter.Api
                 var service = provider.GetRequiredService<IClusterClient>();
                 return service.GetStreamProvider("SMSProvider");
             });
-            services.TryAddSingleton<ISubmitMessageHandlerOracleCloud, SubmitMessageOrleans>();
+            services.TryAddTransient<IStreamNamespaces, StreamNamespaces>();
 
             // Wcf/Soap dependencies
             services.AddXmlWriterNetCore3Fix();
@@ -83,7 +84,7 @@ namespace PmsAdapter.Api
         public static IApplicationBuilder UseOperaCloudLinkController(this IApplicationBuilder app)
         {
             app.UseOrleansClient();
-            
+
 
             return app;
         }

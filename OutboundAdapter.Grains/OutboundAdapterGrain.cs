@@ -3,6 +3,7 @@ using Orleans;
 using Orleans.Streams;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
+using OutboundAdapter.Interfaces.StreamHelpers;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,10 +17,12 @@ namespace OutboundAdapter.Grains
         private IStreamProvider _streamProvider;
         //private StreamSequenceToken _streamSequenceToken;
         private static readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
+        private readonly IStreamNamespaces _streamNamspaces;
 
-        public OutboundAdapterGrain(ILogger<OutboundAdapterGrain> logger)
+        public OutboundAdapterGrain(ILogger<OutboundAdapterGrain> logger, IStreamNamespaces streamNamspaces)
         {
             this.logger = logger;
+            _streamNamspaces = streamNamspaces;
         }
 
         public override async Task OnActivateAsync()
@@ -53,12 +56,7 @@ namespace OutboundAdapter.Grains
             await _semaphoreSlim.WaitAsync();
             try
             {
-                if (!await _hotel.IsOutboundConnected())
-                {
-                    return await Task.FromException<OrderItem>(new Exception("Not connected"));
-                }
-
-                var streamNamespace = await _hotel.StreamNamespaceOutbound<UpdateRoomStatus>();
+                var streamNamespace = ""; // _streamNamspaces.OutboundNamespace<UpdateRoomStatus, Constants.Outbound.OperaCloud>();
                 var stream = _streamProvider.GetStream<UpdateRoomStatus>(this.GetPrimaryKey(), streamNamespace);
                 var streamed = stream.OnNextAsync(content);
                 await streamed;

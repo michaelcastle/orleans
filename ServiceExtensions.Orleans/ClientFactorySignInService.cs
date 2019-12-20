@@ -28,7 +28,7 @@ namespace ServiceExtensions.Orleans
                     IsAuthorised = true
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }

@@ -1,5 +1,5 @@
 ﻿namespace ServiceExtensions.ServiceBus
-{ 
+{
     public class RabbitMqSettings : MassTransit.RabbitMqTransport.Hosting.RabbitMqSettings
     {
         public string Host { get; set; }

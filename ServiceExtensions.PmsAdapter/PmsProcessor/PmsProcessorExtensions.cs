@@ -1,19 +1,19 @@
 ﻿using MassTransit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 using ServiceExtensions.PmsAdapter.ServiceBus;
-using System;
-using System.ServiceModel;
 using ServiceExtensions.PmsAdapter.SignIn;
 using ServiceExtensions.PmsAdapter.SignIn.Authentication;
-using Microsoft.Extensions.Configuration;
-using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
-using ServiceExtensions.PmsAdapter.SubmitMessage;
 using ServiceExtensions.PmsAdapter.SignIn.CachedLogin;
+using ServiceExtensions.PmsAdapter.SubmitMessage;
 using ServiceExtensions.ServiceBus;
+using System;
+using System.ServiceModel;
 
 namespace ServiceExtensions.PmsAdapter.PmsProcessor
 {

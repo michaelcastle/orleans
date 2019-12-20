@@ -1,9 +1,9 @@
+using LinkController.OperaCloud.Interfaces.OrleansClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using ServiceExtensions.Orleans;
 
 namespace PmsAdapter.Api.OperaCloud.Outbound
 {

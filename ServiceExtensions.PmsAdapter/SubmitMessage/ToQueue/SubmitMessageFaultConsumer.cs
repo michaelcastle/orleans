@@ -18,7 +18,7 @@ namespace ServiceExtensions.PmsAdapter.SubmitMessage.ToQueue
             var originalMessage = context.Message.Message;
             var exceptions = context.Message.Exceptions;
 
-            foreach(var exception in exceptions)
+            foreach (var exception in exceptions)
             {
                 _logger.LogError(exception.Message, originalMessage);
             }

@@ -1,16 +1,16 @@
-using System;
-using System.Security.Authentication;
-using System.ServiceModel.Channels;
 using Microsoft.AspNetCore.Http;
 using ServiceExtensions.PmsAdapter.ClientChannel;
 using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 using ServiceExtensions.PmsAdapter.SignIn.Authentication;
 using ServiceExtensions.Soap.Core;
 using ServiceExtensions.Soap.Core.Oasis;
+using System;
+using System.Security.Authentication;
+using System.ServiceModel.Channels;
 
 namespace ServiceExtensions.Soap.Oasis
 {
-    public class OasisMessageFilter : IMessageFilter 
+    public class OasisMessageFilter : IMessageFilter
     {
         private const string AuthMissingErrorMessage = "Referenced security token could not be retrieved";
         public readonly string AuthTimestampMessage = "Invalid Timestamp - timestamp was not valid";

@@ -1,12 +1,12 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
-using ServiceExtensions.PmsAdapter.PmsProcessor;
 using Polly;
-using System;
-using System.Threading.Tasks;
-using ServiceExtensions.PmsAdapter.SubmitMessage.Direct;
 using ServiceExtensions.PmsAdapter.ClientChannel;
 using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
+using ServiceExtensions.PmsAdapter.PmsProcessor;
+using ServiceExtensions.PmsAdapter.SubmitMessage.Direct;
+using System;
+using System.Threading.Tasks;
 
 namespace ServiceExtensions.PmsAdapter.SubmitMessage.ToQueue
 {

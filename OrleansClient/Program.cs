@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using LinkController.OperaCloud.Interfaces;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
-using OutboundAdapter.Interfaces.Opera;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -110,7 +110,8 @@ namespace OrleansClient
                 }
 
                 var hotelGrain = client.GetGrain<IOutboundAdapterGrain>(hotelId);
-                var response = hotelGrain.UpdateRoomStatus(currentNumber, new UpdateRoomStatus {
+                var response = hotelGrain.UpdateRoomStatus(currentNumber, new UpdateRoomStatus
+                {
                     Request = @"
 <UpdateRoomStatusRequest xmlns=""http://webservices.micros.com/htng/2008B/SingleGuestItinerary/Housekeeping/Types"">
     <ResortId>USOWS</ResortId>

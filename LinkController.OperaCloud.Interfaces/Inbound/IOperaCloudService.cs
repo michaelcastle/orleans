@@ -1,5 +1,5 @@
-﻿using System.ServiceModel;
-using ServiceExtensions.Soap.Oasis;
+﻿using ServiceExtensions.Soap.Oasis;
+using System.ServiceModel;
 
 namespace LinkController.OperaCloud.Interfaces.Outbound.Inbound
 {

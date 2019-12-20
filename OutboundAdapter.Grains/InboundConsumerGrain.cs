@@ -17,7 +17,7 @@ namespace OutboundAdapter.Grains
             observer = configuration.InboundType switch
             {
                 "V2" => GrainFactory.GetGrain<ISubmitMessageConsumer>(hotelId),
-                "V2Generic" => GrainFactory.GetGrain<ISubmitMessageApiConsumer>(hotelId),
+                "Htng" => GrainFactory.GetGrain<ISubmitMessageApiConsumer>(hotelId),
                 "Topcat" => GrainFactory.GetGrain<ISubmitMessageApiConsumer>(hotelId),
                 _ => null,
             };

@@ -3,8 +3,8 @@ using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceExtensions.PmsAdapter.SubmitMessage.ToQueue;
-using System;
 using ServiceExtensions.ServiceBus;
+using System;
 
 namespace ServiceExtensions.PmsAdapter.ServiceBus
 {

@@ -1,10 +1,10 @@
-using System;
-using System.ServiceModel.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ServiceExtensions.Soap.Core.Oasis;
 using ServiceExtensions.Soap.Core.Response;
+using System;
+using System.ServiceModel.Channels;
 
 namespace ServiceExtensions.Soap.Core
 {

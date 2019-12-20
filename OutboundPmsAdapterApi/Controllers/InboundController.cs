@@ -1,29 +1,29 @@
-﻿using Microsoft.Extensions.Logging;
-using Optii.PMS.OperaCloud.Models;
-using ServiceExtensions.Orleans;
-using ServiceExtensions.PmsAdapter.SubmitMessage;
-using ServiceExtensions.Soap.Core.Oasis;
+﻿using LinkController.OperaCloud.Interfaces;
+using LinkController.OperaCloud.Interfaces.Outbound.Inbound;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Orleans;
 using ServiceExtensions.Soap.Oasis;
 using System;
+using System.Linq;
 
-namespace PmsAdapter.Api.Controllers.Opera
+namespace PmsAdapter.Api.OperaCloud.Inbound.Controllers
 {
     public class InboundController : IOperaCloudService, IOperaCloudServiceProfile, IOperaCloudServiceGuestStatusNotification
     {
         private readonly ILogger<InboundController> _logger;
-        private readonly ISubmitMessageHandlerOracleCloud _submitMessageHandler;
-        private readonly IOasisSecurityService _securityObjectService;
+        private readonly IClusterClient _clusterClient;
 
         // TODO get this somehow?
-        private const string HotelId = "1";
+        private string HotelId => Query["hotelid"].FirstOrDefault();
 
         public System.ServiceModel.Channels.MessageHeaders MessageHeaders { get; set; }
+        public QueryCollection Query { get; set; }
 
-        public InboundController(IOasisSecurityService securityObjectService, ILogger<InboundController> logger, ISubmitMessageHandlerOracleCloud submitMessageHandler)
+        public InboundController(ILogger<InboundController> logger, IClusterClient clusterClient)
         {
             _logger = logger;
-            _submitMessageHandler = submitMessageHandler;
-            _securityObjectService = securityObjectService;
+            _clusterClient = clusterClient;
         }
 
         public OperaResponseBody Ping(string s)
@@ -39,15 +39,9 @@ namespace PmsAdapter.Api.Controllers.Opera
 
             try
             {
-                var oasisSecurity = _securityObjectService.GetOasisSecurity(MessageHeaders);
-
-                var response = _submitMessageHandler.SubmitRoomStatusUpdateBE(new SubmitMessage
-                {
-                    HotelId = HotelId,
-                    Message = body,
-                    Username = oasisSecurity.UsernameToken.Username,
-                    Password = oasisSecurity.UsernameToken.Password
-                });
+                int.TryParse(HotelId, out int hotelIdInt);
+                var submitProducer = _clusterClient.GetGrain<ISubmitMessageProducerOracleCloud>(hotelIdInt);
+                var response = submitProducer.ProduceRoomStatusUpdateBE(body);
 
                 _logger.LogDebug("SOAP Result: {result}", response.Result);
 
@@ -68,14 +62,9 @@ namespace PmsAdapter.Api.Controllers.Opera
 
             try
             {
-                var oasisSecurity = _securityObjectService.GetOasisSecurity(MessageHeaders);
-                var response = _submitMessageHandler.SubmitQueueRoomBE(new SubmitMessage
-                {
-                    HotelId = HotelId,
-                    Message = body,
-                    Username = oasisSecurity.UsernameToken.Username,
-                    Password = oasisSecurity.UsernameToken.Password
-                });
+                int.TryParse(HotelId, out int hotelIdInt);
+                var submitProducer = _clusterClient.GetGrain<ISubmitMessageProducerOracleCloud>(hotelIdInt);
+                var response = submitProducer.ProduceQueueRoomBE(body);
 
                 _logger.LogDebug("SOAP Result: {result}", response.Result);
 
@@ -96,14 +85,9 @@ namespace PmsAdapter.Api.Controllers.Opera
 
             try
             {
-                var oasisSecurity = _securityObjectService.GetOasisSecurity(MessageHeaders);
-                var response = _submitMessageHandler.SubmitGuestStatusNotificationExt(new SubmitMessage
-                {
-                    HotelId = HotelId,
-                    Message = body,
-                    Username = oasisSecurity.UsernameToken.Username,
-                    Password = oasisSecurity.UsernameToken.Password
-                });
+                int.TryParse(HotelId, out int hotelIdInt);
+                var submitProducer = _clusterClient.GetGrain<ISubmitMessageProducerOracleCloud>(hotelIdInt);
+                var response = submitProducer.ProduceGuestStatusNotificationExt(body);
 
                 _logger.LogDebug("SOAP Result: {result}", response.Result);
 
@@ -124,15 +108,9 @@ namespace PmsAdapter.Api.Controllers.Opera
 
             try
             {
-                var oasisSecurity = _securityObjectService.GetOasisSecurity(MessageHeaders);
-                var response = _submitMessageHandler.SubmitNewProfile(new SubmitMessage
-                {
-                    HotelId = HotelId,
-                    Message = body,
-                    Username = oasisSecurity.UsernameToken.Username,
-                    Password = oasisSecurity.UsernameToken.Password
-                });
-
+                int.TryParse(HotelId, out int hotelIdInt);
+                var submitProducer = _clusterClient.GetGrain<ISubmitMessageProducerOracleCloud>(hotelIdInt);
+                var response = submitProducer.ProduceNewProfile(body);
                 _logger.LogDebug("SOAP Result: {result}", response.Result);
 
                 var result = response.Result.IsSuccessful ? Flag.SUCCESS : Flag.FAIL;
@@ -152,14 +130,9 @@ namespace PmsAdapter.Api.Controllers.Opera
 
             try
             {
-                var oasisSecurity = _securityObjectService.GetOasisSecurity(MessageHeaders);
-                var response = _submitMessageHandler.SubmitUpdateProfile(new SubmitMessage
-                {
-                    HotelId = HotelId,
-                    Message = body,
-                    Username = oasisSecurity.UsernameToken.Username,
-                    Password = oasisSecurity.UsernameToken.Password
-                });
+                int.TryParse(HotelId, out int hotelIdInt);
+                var submitProducer = _clusterClient.GetGrain<ISubmitMessageProducerOracleCloud>(hotelIdInt);
+                var response = submitProducer.ProduceUpdateProfile(body);
 
                 _logger.LogDebug("SOAP Result: {result}", response.Result);
 

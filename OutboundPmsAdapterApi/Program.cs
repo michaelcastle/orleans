@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System.IO;
 
-namespace PmsAdapter.Api
+namespace PmsAdapter.Api.OperaCloud.Inbound
 {
     public class Program
     {

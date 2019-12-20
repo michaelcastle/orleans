@@ -1,8 +1,8 @@
+using ServiceExtensions.Soap.Core.Oasis;
 using System;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Xml;
-using ServiceExtensions.Soap.Core.Oasis;
 
 namespace ServiceExtensions.Soap.Core.Response
 {
@@ -52,7 +52,7 @@ namespace ServiceExtensions.Soap.Core.Response
             var addressingPrefix = "wsa";
             var addressingSchema = "http://schemas.xmlsoap.org/ws/2004/08/addressing";
             var addressingRoleAnnonymous = "http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous";
-             
+
             // Schema
             writer.WriteAttributeString($"xmlns:{addressingPrefix}", $"{addressingSchema}.xsd");
 

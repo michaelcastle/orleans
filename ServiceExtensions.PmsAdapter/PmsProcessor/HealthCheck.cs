@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using ServiceExtensions.PmsAdapter.ClientChannel;
+using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 using System;
 using System.ServiceModel;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceExtensions.PmsAdapter.Connected_Services.PmsProcessor;
 
 namespace ServiceExtensions.PmsAdapter.PmsProcessor
 {

@@ -1,12 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using LinkController.OperaCloud.Grains;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using OutboundAdapter.Grains;
-using SiloHost.Opera;
+using SiloHost.OperaCloud;
+using System;
+using System.Threading.Tasks;
 
 namespace SiloHost
 {
@@ -56,13 +57,16 @@ namespace SiloHost
                 .ConfigureApplicationParts(parts =>
                 {
                     parts.AddApplicationPart(typeof(OutboundAdapterGrain).Assembly).WithReferences();
+                    //parts.AddApplicationPart(typeof(IAuthenticateOracleCloudGrains).Assembly).WithReferences();
+                    parts.AddApplicationPart(typeof(AuthenticateOracleCloudGrains).Assembly).WithReferences();
                 })
                 //.UseDashboard(options => { options.HideTrace = true; })
                 .AddMemoryGrainStorage(name: "PubSubStore")
                 .AddMemoryGrainStorage(name: "hotelConfigurationStore")
                 .AddMemoryGrainStorage(name: "oracleCloudStore")
-                .ConfigureServices(services => {
-                    services.AddOpera();
+                .ConfigureServices(services =>
+                {
+                    services.AddOperaCloud();
 
                     ////https://www.stevejgordon.co.uk/introduction-to-httpclientfactory-aspnetcore
                     //var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10));

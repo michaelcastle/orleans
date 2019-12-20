@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ServiceExtensions.PmsAdapter.SignIn
+﻿namespace ServiceExtensions.PmsAdapter.SignIn
 {
     public class CredentialsSettings
     {

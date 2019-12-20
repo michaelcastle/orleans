@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using LinkController.OperaCloud.Interfaces;
+using LinkController.OperaCloud.Interfaces.Models;
+using LinkController.OperaCloud.Interfaces.Outbound.Inbound;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Consumer;
 using OutboundAdapter.Interfaces.Models;
-using OutboundAdapter.Interfaces.Opera;
-using OutboundAdapter.Interfaces.Opera.Inbound;
-using OutboundAdapter.Interfaces.Opera.Models;
+using OutboundAdapter.Interfaces.StreamHelpers;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 {
@@ -17,14 +18,16 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
     {
         private readonly IClusterClient _clusterClient;
         private const string StreamProviderName = "SMSProvider";
+        private readonly IStreamNamespaces _streamNamspaces;
 
-        public ConfigurationController(IClusterClient clusterClient)
+        public ConfigurationController(IClusterClient clusterClient, IStreamNamespaces streamNamspaces)
         {
             _clusterClient = clusterClient;
+            _streamNamspaces = streamNamspaces;
         }
 
-        [HttpPost("Consume/{hotelId}")]
-        public async Task<IActionResult> Consume(int hotelId, [FromBody]OutboundConfiguration configuration)
+        [HttpPost("Connect/{hotelId}")]
+        public async Task<IActionResult> Connect(int hotelId, [FromBody]OutboundConfiguration configuration)
         {
             configuration.PmsType = nameof(Constants.Outbound.OperaCloud);
 
@@ -41,7 +44,7 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
         [HttpPost("AuthenticateSubscribers/{hotelId}")]
         public async Task<IActionResult> AuthenticateSubscribers(int hotelId, [FromBody]Credentials credentials)
         {
-            var credentialsGrain = _clusterClient.GetGrain<IAuthenticateOracleCloud>(hotelId);
+            var credentialsGrain = _clusterClient.GetGrain<IAuthenticateOracleCloudGrains>(hotelId);
             await credentialsGrain.SetCredentials(credentials);
             return Ok();
         }
@@ -53,15 +56,15 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
 
             var namespaces = new List<string>
             {
-                await hotel.StreamNamespaceInbound<RoomStatusUpdateBERequestDto, Constants.Outbound.OperaCloud>(),
-                await hotel.StreamNamespaceInbound<GuestStatusNotificationExtRequestDto, Constants.Outbound.OperaCloud>(),
-                await hotel.StreamNamespaceInbound<QueueRoomBERequestDto, Constants.Outbound.OperaCloud>(),
-                await hotel.StreamNamespaceInbound<NewProfileRequestDto, Constants.Outbound.OperaCloud>(),
-                await hotel.StreamNamespaceInbound<UpdateProfileRequestDto, Constants.Outbound.OperaCloud>(),
-                await hotel.StreamNamespaceOutbound<UpdateRoomStatusResponse>()
-                //await hotel.StreamNamespaceInbound<FetchProfileResponse>(nameof(Constants.Outbound.OperaCloud))
-                //await hotel.StreamNamespaceInbound<FetchReservationResponse>(nameof(Constants.Outbound.OperaCloud))
-                //await hotel.StreamNamespaceInbound<ReservationLookupResponse>(nameof(Constants.Outbound.OperaCloud))
+                _streamNamspaces.InboundNamespace<RoomStatusUpdateBERequestDto, Constants.Outbound.OperaCloud>(),
+                _streamNamspaces.InboundNamespace<GuestStatusNotificationExtRequestDto, Constants.Outbound.OperaCloud>(),
+                _streamNamspaces.InboundNamespace<QueueRoomBERequestDto, Constants.Outbound.OperaCloud>(),
+                _streamNamspaces.InboundNamespace<NewProfileRequestDto, Constants.Outbound.OperaCloud>(),
+                _streamNamspaces.InboundNamespace<UpdateProfileRequestDto, Constants.Outbound.OperaCloud>(),
+                _streamNamspaces.OutboundNamespace<UpdateRoomStatusResponseEnvelopeDto, Constants.Outbound.OperaCloud>()
+                //_streamNamspaces.OutboundNamespace<FetchProfileResponse, Constants.Outbound.OperaCloud>()
+                //_streamNamspaces.OutboundNamespace<FetchReservationResponse, Constants.Outbound.OperaCloud>()
+                //_streamNamspaces.OutboundNamespace<ReservationLookupResponse, Constants.Outbound.OperaCloud>()
             };
 
             var consumerGrain = _clusterClient.GetGrain<IInboundConsumerGrain>(0);
