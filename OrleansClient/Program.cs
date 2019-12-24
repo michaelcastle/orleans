@@ -1,4 +1,5 @@
 ﻿using LinkController.OperaCloud.Interfaces;
+using LinkController.OperaCloud.Interfaces.Outbound;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
@@ -102,9 +103,8 @@ namespace OrleansClient
                 var hotel = client.GetGrain<IHotelPmsGrain>(hotelId);
                 if (!await hotel.IsOutboundConnected())
                 {
-                    await hotel.SaveConsumerConfigurationAsync(new OutboundConfiguration
+                    await hotel.Subscribe<IUpdateRoomStatusRequestOperaCloudConsumer>("SMSProvider", new PmsConfiguration
                     {
-                        PmsType = nameof(Constants.Outbound.OperaCloud),
                         Url = "https://ove-osb.microsdc.us:9015"
                     });
                 }

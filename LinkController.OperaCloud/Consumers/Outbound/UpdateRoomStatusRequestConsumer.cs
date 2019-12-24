@@ -2,8 +2,10 @@
 using LinkController.OperaCloud.Interfaces.Models;
 using LinkController.OperaCloud.Interfaces.Outbound;
 using Orleans;
+using Orleans.Runtime;
 using Orleans.Streams;
 using OutboundAdapter.Interfaces;
+using OutboundAdapter.Interfaces.Models;
 using OutboundAdapter.Interfaces.StreamHelpers;
 using System;
 using System.Collections.Generic;
@@ -13,7 +15,6 @@ using System.Threading.Tasks;
 
 namespace LinkController.OperaCloud.Consumers.Outbound
 {
-    [ImplicitStreamSubscription(Constants.Outbound.OperaCloud.UpdateRoomStatusRequestStream)]
     public class UpdateRoomStatusRequestConsumer : Grain, IGrainWithIntegerKey, IUpdateRoomStatusRequestOperaCloudConsumer
     {
         private readonly List<IAsyncStream<UpdateRoomStatusRequestDto>> _streams = new List<IAsyncStream<UpdateRoomStatusRequestDto>>();
@@ -22,11 +23,15 @@ namespace LinkController.OperaCloud.Consumers.Outbound
         private IHotelPmsGrain _hotel;
         private IStreamProvider _streamProvider;
         private readonly IStreamNamespaces _streamNamspaces;
+        private IAsyncObservable<UpdateRoomStatusRequestDto> consumer;
+        private StreamSubscriptionHandle<UpdateRoomStatusRequestDto> consumerHandle;
+        private readonly IPersistentState<SubscribeEndpoint> _configuration;
 
-        public UpdateRoomStatusRequestConsumer(IHttpClientFactory httpClientFactory, IStreamNamespaces streamNamspaces)
+        public UpdateRoomStatusRequestConsumer([PersistentState("subscribeEndpointConfiguration", "subscribeEndpointConfigurationStore")] IPersistentState<SubscribeEndpoint> configuration, IHttpClientFactory httpClientFactory, IStreamNamespaces streamNamspaces)
         {
             _httpClientFactory = httpClientFactory;
             _streamNamspaces = streamNamspaces;
+            _configuration = configuration;
         }
 
         public override async Task OnActivateAsync()
@@ -40,6 +45,11 @@ namespace LinkController.OperaCloud.Consumers.Outbound
             _handles.Add(await stream.SubscribeAsync(OnNextAsync, OnErrorAsync, OnCompletedAsync));
 
             await base.OnActivateAsync();
+        }
+
+        public Task<string> Namespace()
+        {
+            return Task.FromResult(Constants.Outbound.OperaCloud.UpdateRoomStatusRequestStream);
         }
 
         public Task OnCompletedAsync()
@@ -65,11 +75,11 @@ namespace LinkController.OperaCloud.Consumers.Outbound
         {
             var content = MapContent(request);
             var client = _httpClientFactory.CreateClient(nameof(Constants.Outbound.OperaCloud));
-            var config = await _hotel.GetOutboundConfiguration();
-            client.BaseAddress = new Uri(config.Url);
+            
+            client.BaseAddress = new Uri(_configuration.State.Url);
             client.DefaultRequestHeaders.Add("SOAPAction", "http://webservices.micros.com/htng/2008B/SingleGuestItinerary#UpdateRoomStatus");
 
-            var response = await client.PostAsync(config.Endpoint, await content); // StringContent sets the Content-Type header
+            var response = await client.PostAsync(_configuration.State.Endpoint, await content); // StringContent sets the Content-Type header
             response.EnsureSuccessStatusCode();
             return response;
         }
@@ -95,6 +105,28 @@ namespace LinkController.OperaCloud.Consumers.Outbound
             }
 
             return resultStream.Result;
+        }
+
+        public async Task SetConfiguration(ISubscribeEndpoint configuration)
+        {
+            _configuration.State = (SubscribeEndpoint)configuration;
+            await _configuration.WriteStateAsync();
+        }
+
+        public async Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)
+        {
+            var streamProvider = GetStreamProvider(providerToUse);
+            consumer = streamProvider.GetStream<UpdateRoomStatusRequestDto>(streamId, streamNamespace);
+            consumerHandle = await consumer.SubscribeAsync(OnNextAsync, OnErrorAsync, OnActivateAsync);
+        }
+
+        public async Task StopConsuming()
+        {
+            if (consumerHandle != null)
+            {
+                await consumerHandle.UnsubscribeAsync();
+                consumerHandle = null;
+            }
         }
     }
 }

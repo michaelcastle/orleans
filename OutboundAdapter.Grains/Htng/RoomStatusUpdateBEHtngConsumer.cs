@@ -2,6 +2,7 @@
 using Orleans.Streams;
 using OutboundAdapter.Interfaces.Htng;
 using OutboundAdapter.Interfaces.Models;
+using OutboundAdapter.Interfaces.StreamHelpers;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -10,12 +11,13 @@ using System.Threading.Tasks;
 
 namespace LinkController.OperaCloud.Consumers.Inbound
 {
+    [ImplicitStreamSubscription(HtngNamespaces.RoomStatusUpdateBENamespace)]
     public class RoomStatusUpdateBEHtngConsumer : Grain, IRoomStatusUpdateBEHtngConsumer
     {
         private InboundConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
-        private IAsyncObservable<RoomStatusUpdate> consumer;
-        private StreamSubscriptionHandle<RoomStatusUpdate> consumerHandle;
+        //private IAsyncObservable<RoomStatusUpdate> consumer;
+        //private StreamSubscriptionHandle<RoomStatusUpdate> consumerHandle;
 
         public RoomStatusUpdateBEHtngConsumer(IHttpClientFactory httpClientFactory)
         {
@@ -24,6 +26,7 @@ namespace LinkController.OperaCloud.Consumers.Inbound
 
         public override async Task OnActivateAsync()
         {
+
             await base.OnActivateAsync();
         }
 
@@ -60,20 +63,20 @@ namespace LinkController.OperaCloud.Consumers.Inbound
             throw new NotImplementedException();
         }
 
-        public async Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)
-        {
-            var streamProvider = GetStreamProvider(providerToUse);
-            consumer = streamProvider.GetStream<RoomStatusUpdate>(streamId, streamNamespace);
-            consumerHandle = await consumer.SubscribeAsync(OnNextAsync, OnErrorAsync, OnActivateAsync);
-        }
+        //public async Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)
+        //{
+        //    var streamProvider = GetStreamProvider(providerToUse);
+        //    consumer = streamProvider.GetStream<RoomStatusUpdate>(streamId, streamNamespace);
+        //    consumerHandle = await consumer.SubscribeAsync(OnNextAsync, OnErrorAsync, OnActivateAsync);
+        //}
 
-        public async Task StopConsuming()
-        {
-            if (consumerHandle != null)
-            {
-                await consumerHandle.UnsubscribeAsync();
-                consumerHandle = null;
-            }
-        }
+        //public async Task StopConsuming()
+        //{
+        //    if (consumerHandle != null)
+        //    {
+        //        await consumerHandle.UnsubscribeAsync();
+        //        consumerHandle = null;
+        //    }
+        //}
     }
 }

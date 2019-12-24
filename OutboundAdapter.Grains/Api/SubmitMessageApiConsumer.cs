@@ -1,6 +1,5 @@
 ﻿using Orleans;
 using Orleans.Streams;
-using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Consumer;
 using OutboundAdapter.Interfaces.Models;
 using System;
@@ -8,9 +7,14 @@ using System.Threading.Tasks;
 
 namespace OutboundAdapter.Grains.Api
 {
-    public class SubmitMessageApiConsumer : Grain, ISubmitMessageApiConsumer
+    public class SubmitMessageApiConsumer : Grain, ISubmitMessageHtngConsumer
     {
         public Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> Namespace()
         {
             throw new NotImplementedException();
         }
@@ -20,22 +24,22 @@ namespace OutboundAdapter.Grains.Api
             throw new NotImplementedException();
         }
 
-        Task IAsyncObserver<string>.OnCompletedAsync()
+        public Task OnCompletedAsync()
         {
             throw new NotImplementedException();
         }
 
-        Task IAsyncObserver<string>.OnErrorAsync(Exception ex)
+        public Task OnErrorAsync(Exception ex)
         {
             throw new NotImplementedException();
         }
 
-        Task IAsyncObserver<string>.OnNextAsync(string item, StreamSequenceToken token)
+        public Task OnNextAsync(string item, StreamSequenceToken token)
         {
             throw new NotImplementedException();
         }
 
-        Task ISubscribeToResponseObserver.SetConfiguration(InboundConfiguration configuration)
+        public Task SetConfiguration(ISubscribeEndpoint configuration)
         {
             throw new NotImplementedException();
         }

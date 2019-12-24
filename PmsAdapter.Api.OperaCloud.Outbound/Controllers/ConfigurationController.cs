@@ -1,5 +1,4 @@
-﻿using LinkController.OperaCloud.Interfaces;
-using LinkController.OperaCloud.Interfaces.Models;
+﻿using LinkController.OperaCloud.Interfaces.Outbound;
 using LinkController.OperaCloud.Interfaces.Outbound.Inbound;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
@@ -18,31 +17,32 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
     {
         private readonly IClusterClient _clusterClient;
         private const string StreamProviderName = "SMSProvider";
-        private readonly IStreamNamespaces _streamNamspaces;
+        private readonly IStreamV2Namespaces _streamV2Namespaces;
 
-        public ConfigurationController(IClusterClient clusterClient, IStreamNamespaces streamNamspaces)
+        public ConfigurationController(IClusterClient clusterClient, IStreamV2Namespaces streamV2Namespaces)
         {
             _clusterClient = clusterClient;
-            _streamNamspaces = streamNamspaces;
+            _streamV2Namespaces = streamV2Namespaces;
         }
 
-        [HttpPost("Connect/{hotelId}")]
-        public async Task<IActionResult> Connect(int hotelId, [FromBody]OutboundConfiguration configuration)
+        [HttpPost("ConnectPms/{hotelId}")]
+        public async Task<IActionResult> ConnectPms(int hotelId, [FromBody]PmsConfiguration configuration)
         {
-            configuration.PmsType = nameof(Constants.Outbound.OperaCloud);
-
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
-            var task = hotel.SaveConsumerConfigurationAsync(configuration);
-            await task;
-            if (!task.IsCompletedSuccessfully)
-            {
-                return StatusCode(500);
-            }
+            //await hotel.SavePmsConfigurationAsync(configuration);
+
+            await hotel.Subscribe<IUpdateRoomStatusRequestOperaCloudConsumer>(StreamProviderName, configuration);
+
+            //var namespaces = new List<string> () { Constants.Outbound.OperaCloud.UpdateRoomStatusRequestStream);
+            //var observer = _clusterClient.GetGrain<IUpdateRoomStatusRequestOperaCloudConsumer>((int)hotel.GetPrimaryKeyLong(), configuration.CompoundKeyEndpoint());
+            //await observer.SetConfiguration(configuration);
+            //await hotel.SubscribeResponses(StreamProviderName, namespaces, observer);
+
             return Ok();
         }
 
-        [HttpPost("AuthenticateSubscribers/{hotelId}")]
-        public async Task<IActionResult> AuthenticateSubscribers(int hotelId, [FromBody]Credentials credentials)
+        [HttpPost("AuthenticatePms/{hotelId}")]
+        public async Task<IActionResult> AuthenticatePms(int hotelId, [FromBody]Credentials credentials)
         {
             var credentialsGrain = _clusterClient.GetGrain<IAuthenticateOracleCloudGrains>(hotelId);
             await credentialsGrain.SetCredentials(credentials);
@@ -54,28 +54,28 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
         {
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
 
-            var namespaces = new List<string>
-            {
-                _streamNamspaces.InboundNamespace<RoomStatusUpdateBERequestDto, Constants.Outbound.OperaCloud>(),
-                _streamNamspaces.InboundNamespace<GuestStatusNotificationExtRequestDto, Constants.Outbound.OperaCloud>(),
-                _streamNamspaces.InboundNamespace<QueueRoomBERequestDto, Constants.Outbound.OperaCloud>(),
-                _streamNamspaces.InboundNamespace<NewProfileRequestDto, Constants.Outbound.OperaCloud>(),
-                _streamNamspaces.InboundNamespace<UpdateProfileRequestDto, Constants.Outbound.OperaCloud>(),
-                _streamNamspaces.OutboundNamespace<UpdateRoomStatusResponseEnvelopeDto, Constants.Outbound.OperaCloud>()
-                //_streamNamspaces.OutboundNamespace<FetchProfileResponse, Constants.Outbound.OperaCloud>()
-                //_streamNamspaces.OutboundNamespace<FetchReservationResponse, Constants.Outbound.OperaCloud>()
-                //_streamNamspaces.OutboundNamespace<ReservationLookupResponse, Constants.Outbound.OperaCloud>()
+            var observer = _clusterClient.GetGrain<ISubmitMessageConsumer>((int)hotel.GetPrimaryKeyLong(), configuration.CompoundKeyEndpoint());
+            await observer.SetConfiguration(configuration);
+            await hotel.SubscribeResponses(StreamProviderName, _streamV2Namespaces.InboundNamespaces, observer);
+
+            return Ok();
+        }
+
+        [HttpPost("SubscribeHtng/{hotelId}")]
+        public async Task<IActionResult> SubscribeHtng(int hotelId, [FromBody]InboundConfiguration configuration)
+        {
+            var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
+
+            var tasks = new List<Task>
+            {   
+                //hotel.SubscribeHtng<IQueueRoomConsumer>(StreamProviderName, configuration),
+                //hotel.SubscribeHtng<IUpdateProfileConsumer>(StreamProviderName, configuration),
+                //hotel.SubscribeHtng<INewProfileConsumer>(StreamProviderName, configuration),
+                //hotel.SubscribeHtng<IGuestStatusNotificationConsumer>(StreamProviderName, configuration),
+                hotel.Subscribe<IRoomStatusUpdateBEConsumer>(StreamProviderName, configuration)
             };
 
-            var consumerGrain = _clusterClient.GetGrain<IInboundConsumerGrain>(0);
-            var observer = await consumerGrain.GetInboundConsumer(configuration, hotelId);
-            var task = hotel.SubscribeToInbound(configuration, StreamProviderName, namespaces, observer);
-
-            await task;
-            if (!task.IsCompletedSuccessfully)
-            {
-                return StatusCode(500);
-            }
+            await Task.WhenAll(tasks.ToArray());
 
             return Ok();
         }
@@ -83,9 +83,25 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
         [HttpPost("Unsubscribe/{hotelId}")]
         public async Task<IActionResult> Unsubscribe(int hotelId, [FromBody]InboundConfiguration configuration)
         {
+            var observer = _clusterClient.GetGrain<ISubmitMessageConsumer>(hotelId, configuration.CompoundKeyEndpoint());
+            await observer.StopConsuming();
+
+            return Ok();
+        }
+
+        [HttpPost("UnsubscribeHtng/{hotelId}")]
+        public async Task<IActionResult> UnsubscribeHtng(int hotelId, [FromBody]InboundConfiguration configuration)
+        {
+            var tasks = new List<Task>();
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
 
-            await hotel.Unsubscribe(configuration);
+            //tasks.Add(hotel.UnsubscribeHtng<IQueueRoomConsumer>(configuration));
+            //tasks.Add(hotel.UnsubscribeHtng<IUpdateProfileConsumer>(configuration));
+            //tasks.Add(hotel.UnsubscribeHtng<INewProfileConsumer>(configuration));
+            //tasks.Add(hotel.UnsubscribeHtng<IGuestStatusNotificationConsumer>(configuration));
+            tasks.Add(hotel.UnsubscribeHtng<IRoomStatusUpdateBEConsumer>(configuration));
+
+            await Task.WhenAll(tasks.ToArray());
 
             return Ok();
         }

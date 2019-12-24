@@ -64,6 +64,7 @@ namespace SiloHost
                 .AddMemoryGrainStorage(name: "PubSubStore")
                 .AddMemoryGrainStorage(name: "hotelConfigurationStore")
                 .AddMemoryGrainStorage(name: "oracleCloudStore")
+                .AddMemoryGrainStorage(name: "subscribeEndpointConfigurationStore")
                 .ConfigureServices(services =>
                 {
                     services.AddOperaCloud();

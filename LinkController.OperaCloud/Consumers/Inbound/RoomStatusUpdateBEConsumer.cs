@@ -1,9 +1,9 @@
 ﻿using LinkController.OperaCloud.Interfaces;
+using LinkController.OperaCloud.Interfaces.Models;
 using LinkController.OperaCloud.Interfaces.Outbound.Inbound;
 using Orleans;
+using Orleans.Runtime;
 using Orleans.Streams;
-using OutboundAdapter.Interfaces;
-using OutboundAdapter.Interfaces.Consumer;
 using OutboundAdapter.Interfaces.Models;
 using OutboundAdapter.Interfaces.StreamHelpers;
 using System;
@@ -11,20 +11,21 @@ using System.Threading.Tasks;
 
 namespace LinkController.OperaCloud.Consumers.Inbound
 {
-    public class RoomStatusUpdateBEConsumer : Grain, ISubmitMessageApiConsumer
+    public class RoomStatusUpdateBEConsumer : Grain, IRoomStatusUpdateBEConsumer
     {
         private readonly IClusterClient _clusterClient;
-        private InboundConfiguration _configuration;
+        private readonly IPersistentState<SubscribeEndpoint> _configuration;
         private IAsyncObservable<string> consumer;
         private StreamSubscriptionHandle<string> consumerHandle;
         private readonly IStreamProvider _streamProvider;
         private readonly IStreamNamespaces _streamNamspaces;
 
-        public RoomStatusUpdateBEConsumer(IClusterClient clusterClient, IStreamProvider streamProvider, IStreamNamespaces streamNamspaces)
+        public RoomStatusUpdateBEConsumer([PersistentState("subscribeEndpointConfiguration", "subscribeEndpointConfigurationStore")] IPersistentState<SubscribeEndpoint> configuration, IClusterClient clusterClient, IStreamProvider streamProvider, IStreamNamespaces streamNamspaces)
         {
             _clusterClient = clusterClient;
             _streamProvider = streamProvider;
             _streamNamspaces = streamNamspaces;
+            _configuration = configuration;
         }
 
         public override async Task OnActivateAsync()
@@ -32,23 +33,27 @@ namespace LinkController.OperaCloud.Consumers.Inbound
             await base.OnActivateAsync();
         }
 
-        public async Task SetConfiguration(InboundConfiguration configuration)
+        public Task<string> Namespace()
         {
-            _configuration = configuration;
-            //await _configuration.WriteStateAsync();
+            return Task.FromResult(_streamNamspaces.InboundNamespace<RoomStatusUpdateBERequestDto, Constants.Outbound.OperaCloud>());
+        }
+
+        public async Task SetConfiguration(ISubscribeEndpoint configuration)
+        {
+            _configuration.State = (SubscribeEndpoint)configuration;
+            await _configuration.WriteStateAsync();
         }
 
         public async Task OnNextAsync(string content, StreamSequenceToken token)
         {
-            if (_configuration == null || string.IsNullOrEmpty(_configuration.Url))
+            if (_configuration == null || string.IsNullOrEmpty(_configuration.State.Url))
             {
                 throw new Exception("Hotel is not connected to the PMS. Please Connect first.");
             }
 
             var response = GetResponseContent(content);
 
-            var streamNamespace = _streamNamspaces.InboundNamespace<RoomStatusUpdate, Subscribers.Htng>();
-            var stream = _streamProvider.GetStream<RoomStatusUpdate>(this.GetPrimaryKey(), streamNamespace);
+            var stream = _streamProvider.GetStream<RoomStatusUpdate>(this.GetPrimaryKey(), HtngNamespaces.RoomStatusUpdateBENamespace);
 
             await stream.OnNextAsync(await response);
         }
@@ -67,7 +72,7 @@ namespace LinkController.OperaCloud.Consumers.Inbound
             return response;
         }
 
-        Task IAsyncObserver<string>.OnCompletedAsync()
+        public Task OnCompletedAsync()
         {
             throw new NotImplementedException();
         }

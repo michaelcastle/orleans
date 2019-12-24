@@ -9,27 +9,29 @@ namespace OutboundAdapter.Interfaces.Models
         public int Number { get; set; }
         public int TotalNumber { get; set; }
         public InboundConfiguration InboundConfiguration { get; set; }
-        public OutboundConfiguration OutboundConfiguration { get; set; }
+        public PmsConfiguration OutboundConfiguration { get; set; }
     }
 
     [Serializable]
-    public class InboundConfiguration
+    public class InboundConfiguration : SubscribeEndpoint
     {
-        public string Endpoint { get; set; }
-        public string Url { get; set; }
-        public string InboundType { get; set; }
         public Guid ClientToken { get; set; }
         public string MediaType { get; set; }
+    }
+
+    [Serializable]
+    public class PmsConfiguration : SubscribeEndpoint
+    {
+    }
+
+    [Serializable]
+    public class SubscribeEndpoint : ISubscribeEndpoint
+    {
+        public string Url { get; set; }
+        public string Endpoint { get; set; }
         public Credentials Credentials { get; set; }
     }
 
-    [Serializable]
-    public class OutboundConfiguration
-    {
-        public string Url { get; set; }
-        public string PmsType { get; set; }
-        public string Endpoint { get; set; }
-    }
 
     [Serializable]
     public class Credentials
@@ -38,11 +40,20 @@ namespace OutboundAdapter.Interfaces.Models
         public string EncryptedPassword { get; set; }
     }
 
-    public static class InboundConfigurationExtensions
+    public interface ISubscribeEndpoint
     {
-        public static string Key(this InboundConfiguration inboundConfiguration)
+        string Url { get; set; }
+        string Endpoint { get; set; }
+        Credentials Credentials { get; set; }
+    }
+
+    public static class Extensions
+    {
+        public static string CompoundKeyEndpoint(this ISubscribeEndpoint configuration)
         {
-            return $"{inboundConfiguration.InboundType}{inboundConfiguration.Url}";
+            var baseUrl = new Uri(configuration.Url);
+            var endpointUrl = new Uri(baseUrl, configuration.Endpoint);
+            return endpointUrl.AbsoluteUri;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Orleans;
+﻿using Orleans.Runtime;
 using Orleans.Streams;
 using OutboundAdapter.Interfaces.Consumer;
 using OutboundAdapter.Interfaces.Models;
@@ -11,48 +11,51 @@ using System.Threading.Tasks;
 
 namespace OutboundAdapter.Grains.V2
 {
-    public class SubmitMessageConsumer : Grain, ISubmitMessageConsumer
+    public class SubmitMessageConsumer : SubscribeObserver<string>, ISubmitMessageConsumer
     {
-        private InboundConfiguration _configuration;
         private readonly IPmsProcessorService _pmsProcessorService;
         private IClientChannelFactory<IPMSInterfaceContractChannel> _clientFactory;
-        private StreamSubscriptionHandle<string> _subscription;
 
-        public SubmitMessageConsumer(IPmsProcessorService pmsProcessorService)
+        public SubmitMessageConsumer([PersistentState("subscribeEndpointConfiguration", "subscribeEndpointConfigurationStore")] IPersistentState<SubscribeEndpoint> configuration, IPmsProcessorService pmsProcessorService) : base(configuration)
         {
             _pmsProcessorService = pmsProcessorService;
         }
 
-        public async Task OnNextAsync(string message, StreamSequenceToken token = null)
+        public override async Task OnActivateAsync()
         {
-            await _pmsProcessorService.SubmitMessage(_clientFactory, _configuration.Credentials.EncryptedUsername, _configuration.Credentials.EncryptedPassword, message);
+            await SetConfiguration(_configuration.State);
+            await base.OnActivateAsync();
         }
 
-        public Task OnCompletedAsync()
+        public override async Task OnNextAsync(string message, StreamSequenceToken token = null)
         {
-            return Task.CompletedTask;
+            await _pmsProcessorService.SubmitMessage(_clientFactory, _configuration.State.Credentials.EncryptedUsername, _configuration.State.Credentials.EncryptedPassword, message);
         }
 
-        public Task OnErrorAsync(Exception ex)
+        //public override Task OnCompletedAsync()
+        //{
+        //    return Task.CompletedTask;
+        //}
+
+        //public override Task OnErrorAsync(Exception ex)
+        //{
+        //    return Task.CompletedTask;
+        //}
+
+        public new async Task SetConfiguration(ISubscribeEndpoint configuration)
         {
-            return Task.CompletedTask;
+            _clientFactory = SetClientFactory(_configuration.State);
+            await base.SetConfiguration(configuration);
         }
 
-        public Task SetConfiguration(InboundConfiguration configuration)
-        {
-            _configuration = configuration;
-            _clientFactory = SetClientFactory(_configuration);
-            return Task.CompletedTask;
-        }
+        //public async Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)
+        //{
+        //    var streamProvider = GetStreamProvider(providerToUse);
+        //    var stream = streamProvider.GetStream<string>(streamId, streamNamespace);
+        //    _subscription = await stream.SubscribeAsync(OnNextAsync, OnErrorAsync, OnActivateAsync);
+        //}
 
-        public async Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)
-        {
-            var streamProvider = GetStreamProvider(providerToUse);
-            var stream = streamProvider.GetStream<string>(streamId, streamNamespace);
-            _subscription = await stream.SubscribeAsync(OnNextAsync, OnErrorAsync, OnActivateAsync);
-        }
-
-        private IClientChannelFactory<IPMSInterfaceContractChannel> SetClientFactory(InboundConfiguration configuration)
+        private IClientChannelFactory<IPMSInterfaceContractChannel> SetClientFactory(ISubscribeEndpoint configuration)
         {
             if (string.IsNullOrEmpty(configuration.Url))
             {
@@ -85,13 +88,13 @@ namespace OutboundAdapter.Grains.V2
             return clientFactory;
         }
 
-        public async Task StopConsuming()
-        {
-            if (_subscription != null)
-            {
-                await _subscription.UnsubscribeAsync();
-                _subscription = null;
-            }
-        }
+        //public async Task StopConsuming()
+        //{
+        //    if (_subscription != null)
+        //    {
+        //        await _subscription.UnsubscribeAsync();
+        //        _subscription = null;
+        //    }
+        //}
     }
 }

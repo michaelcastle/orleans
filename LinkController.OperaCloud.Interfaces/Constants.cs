@@ -1,4 +1,6 @@
 using LinkController.OperaCloud.Interfaces.Models;
+using OutboundAdapter.Interfaces.StreamHelpers;
+using System.Collections.Generic;
 
 namespace LinkController.OperaCloud.Interfaces
 {
@@ -28,6 +30,22 @@ namespace LinkController.OperaCloud.Interfaces
                 public const string RoomStatusUpdateStream = nameof(Inbound) + nameof(RoomStatusUpdateBERequestDto) + nameof(V2);
                 public const string UpdateRoomStatusResponseStream = nameof(Outbound) + nameof(UpdateRoomStatusResponseEnvelopeDto) + nameof(V2);
             }
+        }
+
+        public class V2StreamNamespaces : StreamNamespaces, IStreamV2Namespaces
+        {
+            public List<string> InboundNamespaces => new List<string>
+            {
+                InboundNamespace<RoomStatusUpdateBERequestDto, Outbound.OperaCloud>(),
+                InboundNamespace<GuestStatusNotificationExtRequestDto, Outbound.OperaCloud>(),
+                InboundNamespace<QueueRoomBERequestDto, Outbound.OperaCloud>(),
+                InboundNamespace<NewProfileRequestDto, Outbound.OperaCloud>(),
+                InboundNamespace<UpdateProfileRequestDto, Outbound.OperaCloud>(),
+                OutboundNamespace<UpdateRoomStatusResponseEnvelopeDto, Outbound.OperaCloud>()
+                //OutboundNamespace<FetchProfileResponse, Constants.Outbound.OperaCloud>()
+                //OutboundNamespace<FetchReservationResponse, Constants.Outbound.OperaCloud>()
+                //OutboundNamespace<ReservationLookupResponse, Constants.Outbound.OperaCloud>()
+            };
         }
     }
 }

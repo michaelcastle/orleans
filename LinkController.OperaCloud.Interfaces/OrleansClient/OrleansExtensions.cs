@@ -10,6 +10,7 @@ using Orleans.Hosting;
 using OutboundAdapter.Interfaces.StreamHelpers;
 using Polly;
 using System;
+using static LinkController.OperaCloud.Interfaces.Constants;
 
 namespace LinkController.OperaCloud.Interfaces.OrleansClient
 {
@@ -18,6 +19,9 @@ namespace LinkController.OperaCloud.Interfaces.OrleansClient
         public static IServiceCollection AddOrleansClient(this IServiceCollection services)
         {
             services.TryAddTransient<IStreamNamespaces, StreamNamespaces>();
+            services.TryAddTransient<IStreamV2Namespaces, V2StreamNamespaces>();
+            services.TryAddTransient<IStreamHtngNamespaces, HtngNamespaces>();
+
             services.AddSingleton(provider =>
             {
                 return Policy<IClusterClient>

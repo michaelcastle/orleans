@@ -6,10 +6,19 @@ using System.Threading.Tasks;
 
 namespace OutboundAdapter.Interfaces
 {
-    public interface ISubscribeToResponseObserver : IAsyncObserver<string>, IGrainWithIntegerKey
+    public interface ISubscribeToResponseObserver : IAsyncObserver<string>, ISubscribeObserver
     {
-        Task SetConfiguration(InboundConfiguration configuration);
+    }
+
+    public interface ISubscribeObserver : IGrainWithIntegerCompoundKey
+    {
+        Task SetConfiguration(ISubscribeEndpoint configuration);
         Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse);
         Task StopConsuming();
+    }
+
+    public interface ISubscribeWithNamespaceObserver : ISubscribeObserver
+    {
+        Task<string> Namespace();
     }
 }

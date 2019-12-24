@@ -10,16 +10,10 @@ namespace OutboundAdapter.Grains
     public class HotelPmsGrain : Grain, IHotelPmsGrain
     {
         private readonly IPersistentState<HotelConfiguration> _hotelConfiguration;
-        private readonly Dictionary<string, ISubscribeToResponseObserver> _inboundSubscribers = new Dictionary<string, ISubscribeToResponseObserver>();
 
-        Task<bool> IHotelPmsGrain.IsOutboundConnected()
+        public Task<bool> IsOutboundConnected()
         {
-            return Task.FromResult(_hotelConfiguration.State.OutboundConfiguration != null && !string.IsNullOrEmpty(_hotelConfiguration.State.OutboundConfiguration.PmsType));
-        }
-
-        Task<bool> IHotelPmsGrain.IsInboundConnected()
-        {
-            return Task.FromResult(_hotelConfiguration.State.InboundConfiguration != null && !string.IsNullOrEmpty(_hotelConfiguration.State.InboundConfiguration.InboundType));
+            return Task.FromResult(_hotelConfiguration.State.OutboundConfiguration != null);
         }
 
         public HotelPmsGrain([PersistentState("hotelConfiguration", "hotelConfigurationStore")] IPersistentState<HotelConfiguration> hotelConfiguration)
@@ -32,50 +26,36 @@ namespace OutboundAdapter.Grains
             await base.OnActivateAsync();
         }
 
-        Task<OutboundConfiguration> IHotelPmsGrain.GetOutboundConfiguration()
+        public Task<PmsConfiguration> GetOutboundConfiguration()
         {
             return Task.FromResult(_hotelConfiguration.State.OutboundConfiguration);
         }
 
-        async Task IHotelPmsGrain.SaveConsumerConfigurationAsync(OutboundConfiguration configuration)
+        public async Task UnsubscribeHtng<T>(ISubscribeEndpoint configuration) where T : IGrain, ISubscribeWithNamespaceObserver
         {
-            _hotelConfiguration.State.OutboundConfiguration = configuration;
-            await _hotelConfiguration.WriteStateAsync();
+            var tasks = new List<Task>();
+            var consumer = GrainFactory.GetGrain<T>((int)this.GetPrimaryKeyLong(), configuration.CompoundKeyEndpoint());
+            tasks.Add(consumer.StopConsuming());
+            await Task.WhenAll(tasks);
         }
 
-        async Task IHotelPmsGrain.SubscribeToInbound(InboundConfiguration configuration, string provider, IList<string> streamNamespaces, ISubscribeToResponseObserver observer)
+        public async Task Subscribe<T>(string provider, ISubscribeEndpoint configuration) where T : IGrain, ISubscribeWithNamespaceObserver
         {
-            var config = observer.SetConfiguration(configuration);
+            var roomStatusUpdateBeObserver = GrainFactory.GetGrain<T>((int)this.GetPrimaryKeyLong(), configuration.CompoundKeyEndpoint(), null);
+            await roomStatusUpdateBeObserver.SetConfiguration(configuration);
+            await SubscribeResponses(provider, new List<string> { await roomStatusUpdateBeObserver.Namespace() }, roomStatusUpdateBeObserver);
+        }
 
+        public async Task SubscribeResponses(string provider, IList<string> streamNamespaces, ISubscribeObserver observer)
+        {
             var tasks = new List<Task>();
-
-            await config;
 
             foreach (var streamNamespace in streamNamespaces)
             {
                 tasks.Add(observer.BecomeConsumer(this.GetPrimaryKey(), streamNamespace, provider));
-                if (_inboundSubscribers.ContainsKey(configuration.Key()))
-                {
-                    await Unsubscribe(configuration);
-                }
-
-                _inboundSubscribers.Add(configuration.Key(), observer);
             }
 
             await Task.WhenAll(tasks);
-
-            await _hotelConfiguration.WriteStateAsync();
-        }
-
-        public async Task Unsubscribe(InboundConfiguration configuration)
-        {
-            _inboundSubscribers.TryGetValue(configuration.Key(), out var observer);
-            if (observer == null)
-            {
-                return;
-            }
-            await observer.StopConsuming();
-            _inboundSubscribers.Remove(configuration.Key());
         }
     }
 }
