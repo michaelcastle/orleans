@@ -32,7 +32,6 @@ namespace OutboundAdapter.Interfaces.Models
         public Credentials Credentials { get; set; }
     }
 
-
     [Serializable]
     public class Credentials
     {

@@ -4,7 +4,6 @@ using LinkController.OperaCloud.Interfaces.Outbound;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Streams;
-using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
 using OutboundAdapter.Interfaces.StreamHelpers;
 using System;
@@ -15,12 +14,12 @@ using System.Threading.Tasks;
 
 namespace LinkController.OperaCloud.Consumers.Outbound
 {
-    public class UpdateRoomStatusRequestConsumer : Grain, IGrainWithIntegerKey, IUpdateRoomStatusRequestOperaCloudConsumer
+    public class UpdateRoomStatusRequestConsumer : Grain, IUpdateRoomStatusRequestOperaCloudConsumer
     {
         private readonly List<IAsyncStream<UpdateRoomStatusRequestDto>> _streams = new List<IAsyncStream<UpdateRoomStatusRequestDto>>();
         private readonly List<StreamSubscriptionHandle<UpdateRoomStatusRequestDto>> _handles = new List<StreamSubscriptionHandle<UpdateRoomStatusRequestDto>>();
         private readonly IHttpClientFactory _httpClientFactory;
-        private IHotelPmsGrain _hotel;
+        //private IHotelPmsGrain _hotel;
         private IStreamProvider _streamProvider;
         private readonly IStreamNamespaces _streamNamspaces;
         private IAsyncObservable<UpdateRoomStatusRequestDto> consumer;
@@ -34,11 +33,17 @@ namespace LinkController.OperaCloud.Consumers.Outbound
             _configuration = configuration;
         }
 
+        public Guid GetPrimaryKey()
+        {
+            var primaryKey = this.GetPrimaryKey(out string keyExtension);
+            return primaryKey;
+        }
+
         public override async Task OnActivateAsync()
         {
             _streamProvider = GetStreamProvider("SMSProvider");
 
-            _hotel = GrainFactory.GetGrain<IHotelPmsGrain>((int)this.GetPrimaryKeyLong());
+            //_hotel = GrainFactory.GetGrain<IHotelPmsGrain>((int)this.GetPrimaryKeyLong());
 
             var stream = _streamProvider.GetStream<UpdateRoomStatusRequestDto>(this.GetPrimaryKey(), Constants.Outbound.OperaCloud.UpdateRoomStatusRequestStream);
             _streams.Add(stream);
@@ -86,7 +91,7 @@ namespace LinkController.OperaCloud.Consumers.Outbound
 
         private async Task<StringContent> MapContent(UpdateRoomStatusRequestDto request)
         {
-            var mapper = GrainFactory.GetGrain<IOutboundMappingOperaCloudGrains>((int)this.GetPrimaryKeyLong());
+            var mapper = GrainFactory.GetGrain<IOutboundMappingOperaCloudGrains>(0);
             var content = await mapper.MapUpdateRoomStatus(request);
             return new StringContent(content, Encoding.UTF8, "text/xml");
         }

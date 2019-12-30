@@ -13,9 +13,6 @@ namespace OutboundAdapter.Interfaces
 
     public interface ILinkControllerGrain : IGrainWithIntegerKey
     {
-        Task<bool> IsOutboundConnected();
-        Task<PmsConfiguration> GetOutboundConfiguration();
         Task SubscribeResponses(string provider, IList<string> streamNamespaces, ISubscribeObserver observer);
     }
-
 }

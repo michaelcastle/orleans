@@ -1,5 +1,4 @@
 ﻿using Orleans;
-using Orleans.Runtime;
 using OutboundAdapter.Interfaces;
 using OutboundAdapter.Interfaces.Models;
 using System.Collections.Generic;
@@ -9,29 +8,7 @@ namespace OutboundAdapter.Grains
 {
     public class HotelPmsGrain : Grain, IHotelPmsGrain
     {
-        private readonly IPersistentState<HotelConfiguration> _hotelConfiguration;
-
-        public Task<bool> IsOutboundConnected()
-        {
-            return Task.FromResult(_hotelConfiguration.State.OutboundConfiguration != null);
-        }
-
-        public HotelPmsGrain([PersistentState("hotelConfiguration", "hotelConfigurationStore")] IPersistentState<HotelConfiguration> hotelConfiguration)
-        {
-            _hotelConfiguration = hotelConfiguration;
-        }
-
-        public override async Task OnActivateAsync()
-        {
-            await base.OnActivateAsync();
-        }
-
-        public Task<PmsConfiguration> GetOutboundConfiguration()
-        {
-            return Task.FromResult(_hotelConfiguration.State.OutboundConfiguration);
-        }
-
-        public async Task UnsubscribeHtng<T>(ISubscribeEndpoint configuration) where T : IGrain, ISubscribeWithNamespaceObserver
+         public async Task UnsubscribeHtng<T>(ISubscribeEndpoint configuration) where T : IGrain, ISubscribeWithNamespaceObserver
         {
             var tasks = new List<Task>();
             var consumer = GrainFactory.GetGrain<T>((int)this.GetPrimaryKeyLong(), configuration.CompoundKeyEndpoint());

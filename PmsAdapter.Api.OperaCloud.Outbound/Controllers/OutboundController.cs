@@ -29,21 +29,6 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
             var stream = _streamProvider.GetStream<UpdateRoomStatusRequestDto>(hotel.GetPrimaryKey(), Constants.Outbound.OperaCloud.UpdateRoomStatusRequestStream);
             await stream.OnNextAsync(content);
 
-            //var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
-            //if (!await hotel.IsOutboundConnected())
-            //{
-            //    return BadRequest("Hotel is not connected to the PMS. Please Connect first.");
-            //}
-
-            //var mapper = _clusterClient.GetGrain<IOutboundMappingOperaCloudGrains>(hotelId);
-            //var request = mapper.MapUpdateRoomStatus(content);
-
-            //var hotelGrain = _clusterClient.GetGrain<IOutboundAdapterGrain>(hotelId);
-            //var response = await hotelGrain.UpdateRoomStatus(counter++, new UpdateRoomStatus
-            //{
-            //    Request = await request
-            //});
-
             return Ok();
         }
     }

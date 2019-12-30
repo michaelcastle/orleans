@@ -23,8 +23,11 @@ namespace OutboundAdapter.Grains.V2
 
         public override async Task OnActivateAsync()
         {
-            await SetConfiguration(_configuration.State);
-            await base.OnActivateAsync();
+            if (_configuration.State.Url != null)
+            {
+                await SetConfiguration(_configuration.State);
+                await base.OnActivateAsync();
+            }
         }
 
         public override async Task OnNextAsync(string message, StreamSequenceToken token = null)
@@ -44,8 +47,9 @@ namespace OutboundAdapter.Grains.V2
 
         public new async Task SetConfiguration(ISubscribeEndpoint configuration)
         {
-            _clientFactory = SetClientFactory(_configuration.State);
-            await base.SetConfiguration(configuration);
+            var saveTask = base.SetConfiguration(configuration);
+            _clientFactory = SetClientFactory(configuration);
+            await saveTask;
         }
 
         //public async Task BecomeConsumer(Guid streamId, string streamNamespace, string providerToUse)

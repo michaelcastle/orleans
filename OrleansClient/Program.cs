@@ -101,13 +101,13 @@ namespace OrleansClient
                 currentNumbers[hotelId] = currentNumber;
 
                 var hotel = client.GetGrain<IHotelPmsGrain>(hotelId);
-                if (!await hotel.IsOutboundConnected())
-                {
-                    await hotel.Subscribe<IUpdateRoomStatusRequestOperaCloudConsumer>("SMSProvider", new PmsConfiguration
-                    {
-                        Url = "https://ove-osb.microsdc.us:9015"
-                    });
-                }
+                //if (!await hotel.IsOutboundConnected())
+                //{
+                //    await hotel.Subscribe<IUpdateRoomStatusRequestOperaCloudConsumer>("SMSProvider", new PmsConfiguration
+                //    {
+                //        Url = "https://ove-osb.microsdc.us:9015"
+                //    });
+                //}
 
                 var hotelGrain = client.GetGrain<IOutboundAdapterGrain>(hotelId);
                 var response = hotelGrain.UpdateRoomStatus(currentNumber, new UpdateRoomStatus

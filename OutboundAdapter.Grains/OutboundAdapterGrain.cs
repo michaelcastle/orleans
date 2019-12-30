@@ -56,16 +56,16 @@ namespace OutboundAdapter.Grains
             await _semaphoreSlim.WaitAsync();
             try
             {
-                var streamNamespace = ""; // _streamNamspaces.OutboundNamespace<UpdateRoomStatus, Constants.Outbound.OperaCloud>();
-                var stream = _streamProvider.GetStream<UpdateRoomStatus>(this.GetPrimaryKey(), streamNamespace);
-                var streamed = stream.OnNextAsync(content);
-                await streamed;
-                if (streamed.IsFaulted)
-                {
-                    throw new Exception("Stream failed");
-                }
+                //    var streamNamespace = ""; // _streamNamspaces.OutboundNamespace<UpdateRoomStatus, Constants.Outbound.OperaCloud>();
+                //    var stream = _streamProvider.GetStream<UpdateRoomStatus>(this.GetPrimaryKey(), streamNamespace);
+                //    var streamed = stream.OnNextAsync(content);
+                //    await streamed;
+                //    if (streamed.IsFaulted)
+                //    {
+                //        throw new Exception("Stream failed");
+                //    }
 
-                var configuration = await _hotel.GetOutboundConfiguration();
+                //    var configuration = await _hotel.GetOutboundConfiguration();
                 var orderItem = new OrderItem
                 {
                     PrimaryKey = this.GetPrimaryKey(),
@@ -75,7 +75,7 @@ namespace OutboundAdapter.Grains
                     //TotalNumber = configuration.TotalNumber
                 };
 
-                logger.LogDebug($"\n Message received: I am {orderItem.PrimaryKey}, number = '{orderItem.Number}, Response = '{orderItem.Response}'");
+                //    logger.LogDebug($"\n Message received: I am {orderItem.PrimaryKey}, number = '{orderItem.Number}, Response = '{orderItem.Response}'");
 
                 return orderItem;
             }

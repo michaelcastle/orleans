@@ -33,6 +33,12 @@ namespace LinkController.OperaCloud.Consumers.Inbound
             await base.OnActivateAsync();
         }
 
+        public Guid GetPrimaryKey()
+        {
+            var primaryKey = this.GetPrimaryKey(out string _);
+            return primaryKey;
+        }
+
         public Task<string> Namespace()
         {
             return Task.FromResult(_streamNamspaces.InboundNamespace<RoomStatusUpdateBERequestDto, Constants.Outbound.OperaCloud>());
@@ -44,7 +50,7 @@ namespace LinkController.OperaCloud.Consumers.Inbound
             await _configuration.WriteStateAsync();
         }
 
-        public async Task OnNextAsync(string content, StreamSequenceToken token)
+        public async Task OnNextAsync(string content, StreamSequenceToken token) 
         {
             if (_configuration == null || string.IsNullOrEmpty(_configuration.State.Url))
             {

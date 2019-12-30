@@ -29,7 +29,6 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
         public async Task<IActionResult> ConnectPms(int hotelId, [FromBody]PmsConfiguration configuration)
         {
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
-            //await hotel.SavePmsConfigurationAsync(configuration);
 
             await hotel.Subscribe<IUpdateRoomStatusRequestOperaCloudConsumer>(StreamProviderName, configuration);
 
@@ -54,7 +53,7 @@ namespace PmsAdapter.Api.OperaCloud.Outbound.Controllers
         {
             var hotel = _clusterClient.GetGrain<IHotelPmsGrain>(hotelId);
 
-            var observer = _clusterClient.GetGrain<ISubmitMessageConsumer>((int)hotel.GetPrimaryKeyLong(), configuration.CompoundKeyEndpoint());
+            var observer = _clusterClient.GetGrain<ISubmitMessageConsumer>(hotelId, configuration.CompoundKeyEndpoint());
             await observer.SetConfiguration(configuration);
             await hotel.SubscribeResponses(StreamProviderName, _streamV2Namespaces.InboundNamespaces, observer);
 

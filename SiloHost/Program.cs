@@ -62,9 +62,13 @@ namespace SiloHost
                 })
                 //.UseDashboard(options => { options.HideTrace = true; })
                 .AddMemoryGrainStorage(name: "PubSubStore")
-                .AddMemoryGrainStorage(name: "hotelConfigurationStore")
                 .AddMemoryGrainStorage(name: "oracleCloudStore")
-                .AddMemoryGrainStorage(name: "subscribeEndpointConfigurationStore")
+                .AddAdoNetGrainStorage(name: "subscribeEndpointConfigurationStore", options =>
+                {
+                    options.Invariant = "System.Data.SqlClient";
+                    options.ConnectionString = "Data Source=DESKTOP-J31L3H2;Initial Catalog=LinkController;Integrated Security=False;User ID=app;Password=app;";
+                    options.UseJsonFormat = true;
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddOperaCloud();

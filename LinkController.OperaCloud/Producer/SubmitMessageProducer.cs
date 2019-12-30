@@ -13,16 +13,17 @@ namespace LinkController.OperaCloud.Grains.Producer
 {
     public class SubmitMessageProducer : Grain, ISubmitMessageProducerOracleCloud
     {
+        private const string StreamProviderName = "SMSProvider";
         private readonly ILogger<SubmitMessageProducer> _logger;
         private readonly IClusterClient _clusterClient;
         private readonly IStreamProvider _streamProvider;
         private readonly IStreamNamespaces _streamNamspaces;
 
-        public SubmitMessageProducer(ILogger<SubmitMessageProducer> logger, IClusterClient clusterClient, IStreamProvider streamProvider, IStreamNamespaces streamNamspaces)
+        public SubmitMessageProducer(ILogger<SubmitMessageProducer> logger, IClusterClient clusterClient, IStreamNamespaces streamNamspaces)
         {
             _logger = logger;
             _clusterClient = clusterClient;
-            _streamProvider = streamProvider;
+            _streamProvider = clusterClient.GetStreamProvider(StreamProviderName);
             _streamNamspaces = streamNamspaces;
         }
 
