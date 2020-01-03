@@ -56,7 +56,7 @@ namespace SiloHost
                             })
                 .ConfigureApplicationParts(parts =>
                 {
-                    parts.AddApplicationPart(typeof(OutboundAdapterGrain).Assembly).WithReferences();
+                    parts.AddApplicationPart(typeof(HotelPmsGrain).Assembly).WithReferences();
                     //parts.AddApplicationPart(typeof(IAuthenticateOracleCloudGrains).Assembly).WithReferences();
                     parts.AddApplicationPart(typeof(AuthenticateOracleCloudGrains).Assembly).WithReferences();
                 })

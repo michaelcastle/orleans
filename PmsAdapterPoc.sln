@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinkController.OperaCloud.I
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OperaCloud", "OperaCloud", "{FA650C03-1D29-44CE-B15B-0081BB36A283}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestClient", "TestClient", "{CA52BA54-1281-46E2-8840-DFB21E1F579F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "archive", "archive", "{CA52BA54-1281-46E2-8840-DFB21E1F579F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
